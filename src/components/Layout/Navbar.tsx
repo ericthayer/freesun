@@ -620,7 +620,7 @@ const Navbar: React.FC<NavbarProps> = ({ onNavigate, currentPage }) => {
                       fontWeight: 600,
                       fontSize: '0.95rem',
                       textTransform: 'none',
-                      display: { xs: 'none', sm: 'inline-flex' },
+                      display: { xs: 'inline-flex', sm: 'inline-flex' },
                       '&:hover': {
                         backgroundColor:
                           currentPage === 'home'
