@@ -26,7 +26,7 @@ export interface MetarData {
   windDir: number | null;
   windSpeed: number | null;
   windGust: number | null;
-  visibility: number | null;
+  visibility: string | null;
   altimeter: number | null;
   flightCategory: string;
   lat: number;
@@ -110,21 +110,29 @@ export async function getMetar(stationIds: string[]): Promise<MetarData[]> {
     const data = await response.json();
 
     if (!Array.isArray(data)) {
+      console.warn('METAR API returned non-array response:', data);
       return [];
     }
+
+    if (data.length === 0) {
+      console.warn('METAR API returned empty array for stations:', ids);
+      return [];
+    }
+
+    console.log('METAR data received:', data.length, 'observations');
 
     return data.map((metar: any) => ({
       rawText: metar.rawOb || metar.rawText || '',
       stationId: metar.icaoId || metar.stationId || '',
       observationTime: metar.reportTime || metar.obsTime || '',
-      temp: parseFloat(metar.temp) || null,
-      dewpoint: parseFloat(metar.dewp) || null,
-      windDir: parseInt(metar.wdir) || null,
-      windSpeed: parseInt(metar.wspd) || null,
-      windGust: parseInt(metar.wgst) || null,
-      visibility: parseFloat(metar.visib) || null,
-      altimeter: parseFloat(metar.altim) || null,
-      flightCategory: metar.fltcat || 'UNKNOWN',
+      temp: metar.temp !== undefined && metar.temp !== null ? parseFloat(metar.temp) : null,
+      dewpoint: metar.dewp !== undefined && metar.dewp !== null ? parseFloat(metar.dewp) : null,
+      windDir: metar.wdir !== undefined && metar.wdir !== null ? parseInt(metar.wdir) : null,
+      windSpeed: metar.wspd !== undefined && metar.wspd !== null ? parseInt(metar.wspd) : null,
+      windGust: metar.wgst !== undefined && metar.wgst !== null ? parseInt(metar.wgst) : null,
+      visibility: metar.visib !== undefined ? String(metar.visib) : null,
+      altimeter: metar.altim !== undefined && metar.altim !== null ? parseFloat(metar.altim) : null,
+      flightCategory: metar.fltCat || metar.fltcat || 'UNKNOWN',
       lat: parseFloat(metar.lat) || 0,
       lon: parseFloat(metar.lon) || 0,
       name: metar.name || metar.site || ''
@@ -171,8 +179,16 @@ export async function getTaf(stationIds: string[]): Promise<TafData[]> {
     const data = await response.json();
 
     if (!Array.isArray(data)) {
+      console.warn('TAF API returned non-array response:', data);
       return [];
     }
+
+    if (data.length === 0) {
+      console.warn('TAF API returned empty array - not all airports issue TAFs');
+      return [];
+    }
+
+    console.log('TAF data received:', data.length, 'forecasts');
 
     return data.map((taf: any) => ({
       rawText: taf.rawTAF || taf.rawText || '',

@@ -49,22 +49,30 @@ const MetarTafTab: React.FC<MetarTafTabProps> = ({ defaultStationId = '' }) => {
     setError(null);
 
     try {
-      const stations = stationId.toUpperCase().split(',').map(s => s.trim());
+      const stations = stationId.toUpperCase().split(',').map(s => s.trim()).filter(s => s.length > 0);
+
+      console.log('Searching for stations:', stations);
 
       const [metars, tafs] = await Promise.all([
         getMetar(stations),
         getTaf(stations)
       ]);
 
+      console.log('Search results - METARs:', metars.length, 'TAFs:', tafs.length);
+
       if (metars.length === 0) {
-        setError('No METAR data found for the specified station(s)');
+        setError('No METAR data found for the specified station(s). Verify the ICAO codes are correct (e.g., KDEN, KAPA).');
       }
 
       setMetarData(metars);
       setTafData(tafs);
     } catch (err) {
       console.error('Error fetching METAR/TAF:', err);
-      setError('Failed to fetch weather data. Please check the airport code and try again.');
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('Failed to fetch weather data. Please check the airport code and try again.');
+      }
     } finally {
       setLoading(false);
     }
