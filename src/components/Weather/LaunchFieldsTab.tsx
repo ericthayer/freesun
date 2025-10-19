@@ -23,7 +23,9 @@ import {
   InputAdornment,
 } from '@mui/material';
 import MaterialIcon from '../common/MaterialIcon';
+import DemoBanner from '../common/DemoBanner';
 import { supabase } from '../../lib/supabase';
+import { useAuth } from '../../contexts/AuthContext';
 import { getCurrentLocation, GeolocationError } from '../../services/geolocation';
 
 interface LaunchField {
@@ -40,9 +42,11 @@ interface LaunchField {
   is_public: boolean;
   created_by: string | null;
   distance?: number;
+  is_demo?: boolean;
 }
 
 const LaunchFieldsTab: React.FC = () => {
+  const { user } = useAuth();
   const [launchFields, setLaunchFields] = useState<LaunchField[]>([]);
   const [filteredFields, setFilteredFields] = useState<LaunchField[]>([]);
   const [loading, setLoading] = useState(false);
@@ -52,6 +56,7 @@ const LaunchFieldsTab: React.FC = () => {
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedField, setSelectedField] = useState<LaunchField | null>(null);
   const [editMode, setEditMode] = useState(false);
+  const [isDemoMode, setIsDemoMode] = useState(false);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -105,10 +110,19 @@ const LaunchFieldsTab: React.FC = () => {
     setError(null);
 
     try {
-      const { data, error: fetchError } = await supabase
+      let query = supabase
         .from('launch_fields')
-        .select('*')
-        .order('name');
+        .select('*');
+
+      if (user) {
+        query = query.or(`created_by.eq.${user.id},is_demo.eq.true,is_public.eq.true`);
+        setIsDemoMode(false);
+      } else {
+        query = query.eq('is_demo', true);
+        setIsDemoMode(true);
+      }
+
+      const { data, error: fetchError } = await query.order('name');
 
       if (fetchError) throw fetchError;
 
@@ -221,10 +235,16 @@ const LaunchFieldsTab: React.FC = () => {
         facilities: facilitiesArray.length > 0 ? facilitiesArray : null,
         contact_info: formData.contact_info || null,
         is_public: formData.is_public,
-        created_by: null
+        created_by: user?.id || null,
+        is_demo: false
       };
 
       if (editMode && selectedField) {
+        if (selectedField.is_demo) {
+          setError('Demo records cannot be edited. Sign up to create your own records.');
+          return;
+        }
+
         const { error: updateError } = await supabase
           .from('launch_fields')
           .update(fieldData)
@@ -249,6 +269,8 @@ const LaunchFieldsTab: React.FC = () => {
 
   return (
     <Box>
+      {isDemoMode && <DemoBanner />}
+
       <Paper sx={{ p: 3, mb: 3 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, flexWrap: 'wrap', gap: 2 }}>
           <Typography variant="h6">
@@ -305,9 +327,14 @@ const LaunchFieldsTab: React.FC = () => {
                 <CardContent>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
                     <Box sx={{ flex: 1 }}>
-                      <Typography variant="h6" gutterBottom>
-                        {field.name}
-                      </Typography>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                        <Typography variant="h6">
+                          {field.name}
+                        </Typography>
+                        {field.is_demo && (
+                          <Chip label="DEMO" size="small" color="info" variant="outlined" />
+                        )}
+                      </Box>
                       {field.distance !== undefined && (
                         <Chip
                           icon={<MaterialIcon icon="near_me" />}

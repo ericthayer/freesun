@@ -27,7 +27,9 @@ import {
   Tooltip,
 } from '@mui/material';
 import MaterialIcon from '../common/MaterialIcon';
+import DemoBanner from '../common/DemoBanner';
 import { supabase } from '../../lib/supabase';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface FlightLog {
   id: string;
@@ -39,12 +41,14 @@ interface FlightLog {
   weather_conditions: any;
   notes: string | null;
   created_at: string;
+  is_demo?: boolean;
 }
 
 type OrderBy = 'flight_date' | 'location' | 'duration_minutes';
 type Order = 'asc' | 'desc';
 
 const WeatherLogTab: React.FC = () => {
+  const { user } = useAuth();
   const [flightLogs, setFlightLogs] = useState<FlightLog[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -54,6 +58,7 @@ const WeatherLogTab: React.FC = () => {
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedLog, setSelectedLog] = useState<FlightLog | null>(null);
   const [editMode, setEditMode] = useState(false);
+  const [isDemoMode, setIsDemoMode] = useState(false);
 
   const [formData, setFormData] = useState({
     flight_date: new Date().toISOString().split('T')[0],
@@ -81,12 +86,21 @@ const WeatherLogTab: React.FC = () => {
       const yearStart = `${selectedYear}-01-01`;
       const yearEnd = `${selectedYear}-12-31`;
 
-      const { data, error: fetchError } = await supabase
+      let query = supabase
         .from('flight_logs')
         .select('*')
         .gte('flight_date', yearStart)
-        .lte('flight_date', yearEnd)
-        .order(orderBy, { ascending: order === 'asc' });
+        .lte('flight_date', yearEnd);
+
+      if (user) {
+        query = query.or(`user_id.eq.${user.id},is_demo.eq.true`);
+        setIsDemoMode(false);
+      } else {
+        query = query.eq('is_demo', true);
+        setIsDemoMode(true);
+      }
+
+      const { data, error: fetchError } = await query.order(orderBy, { ascending: order === 'asc' });
 
       if (fetchError) throw fetchError;
 
@@ -154,16 +168,22 @@ const WeatherLogTab: React.FC = () => {
   const handleSaveLog = async () => {
     try {
       const logData = {
-        user_id: null,
+        user_id: user?.id || null,
         flight_date: formData.flight_date,
         location: formData.location,
         airport_code: formData.airport_code || null,
         duration_minutes: formData.duration_minutes,
         max_altitude_feet: formData.max_altitude_feet,
-        notes: formData.notes || null
+        notes: formData.notes || null,
+        is_demo: false
       };
 
       if (editMode && selectedLog) {
+        if (selectedLog.is_demo) {
+          setError('Demo records cannot be edited. Sign up to create your own records.');
+          return;
+        }
+
         const { error: updateError } = await supabase
           .from('flight_logs')
           .update(logData)
@@ -194,6 +214,8 @@ const WeatherLogTab: React.FC = () => {
 
   return (
     <Box>
+      {isDemoMode && <DemoBanner />}
+
       <Paper sx={{ p: 3, mb: 3 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, flexWrap: 'wrap', gap: 2 }}>
           <Typography variant="h6">
@@ -278,6 +300,9 @@ const WeatherLogTab: React.FC = () => {
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <MaterialIcon icon="location_on" fontSize="small" color="primary" />
                       {log.location}
+                      {log.is_demo && (
+                        <Chip label="DEMO" size="small" color="info" variant="outlined" />
+                      )}
                     </Box>
                   </TableCell>
                   <TableCell>
