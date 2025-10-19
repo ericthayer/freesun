@@ -28,7 +28,6 @@ import {
 } from '@mui/material';
 import MaterialIcon from '../common/MaterialIcon';
 import { supabase } from '../../lib/supabase';
-import { useAuth } from '../../contexts/AuthContext';
 
 interface FlightLog {
   id: string;
@@ -46,7 +45,6 @@ type OrderBy = 'flight_date' | 'location' | 'duration_minutes';
 type Order = 'asc' | 'desc';
 
 const WeatherLogTab: React.FC = () => {
-  const { user } = useAuth();
   const [flightLogs, setFlightLogs] = useState<FlightLog[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -72,14 +70,10 @@ const WeatherLogTab: React.FC = () => {
   );
 
   useEffect(() => {
-    if (user) {
-      fetchFlightLogs();
-    }
-  }, [user, selectedYear]);
+    fetchFlightLogs();
+  }, [selectedYear]);
 
   const fetchFlightLogs = async () => {
-    if (!user) return;
-
     setLoading(true);
     setError(null);
 
@@ -90,7 +84,6 @@ const WeatherLogTab: React.FC = () => {
       const { data, error: fetchError } = await supabase
         .from('flight_logs')
         .select('*')
-        .eq('user_id', user.id)
         .gte('flight_date', yearStart)
         .lte('flight_date', yearEnd)
         .order(orderBy, { ascending: order === 'asc' });
@@ -159,11 +152,9 @@ const WeatherLogTab: React.FC = () => {
   };
 
   const handleSaveLog = async () => {
-    if (!user) return;
-
     try {
       const logData = {
-        user_id: user.id,
+        user_id: null,
         flight_date: formData.flight_date,
         location: formData.location,
         airport_code: formData.airport_code || null,
@@ -200,20 +191,6 @@ const WeatherLogTab: React.FC = () => {
     const mins = minutes % 60;
     return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
   };
-
-  if (!user) {
-    return (
-      <Paper sx={{ p: 4, textAlign: 'center' }}>
-        <MaterialIcon icon="login" sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
-        <Typography variant="h6" color="text.secondary" gutterBottom>
-          Sign In Required
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          Please sign in to view and manage your flight logs
-        </Typography>
-      </Paper>
-    );
-  }
 
   return (
     <Box>

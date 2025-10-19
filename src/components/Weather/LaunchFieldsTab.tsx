@@ -24,7 +24,6 @@ import {
 } from '@mui/material';
 import MaterialIcon from '../common/MaterialIcon';
 import { supabase } from '../../lib/supabase';
-import { useAuth } from '../../contexts/AuthContext';
 import { getCurrentLocation, GeolocationError } from '../../services/geolocation';
 
 interface LaunchField {
@@ -44,7 +43,6 @@ interface LaunchField {
 }
 
 const LaunchFieldsTab: React.FC = () => {
-  const { user } = useAuth();
   const [launchFields, setLaunchFields] = useState<LaunchField[]>([]);
   const [filteredFields, setFilteredFields] = useState<LaunchField[]>([]);
   const [loading, setLoading] = useState(false);
@@ -71,7 +69,7 @@ const LaunchFieldsTab: React.FC = () => {
   useEffect(() => {
     fetchLaunchFields();
     handleGetLocation();
-  }, [user]);
+  }, []);
 
   useEffect(() => {
     filterFields();
@@ -171,11 +169,6 @@ const LaunchFieldsTab: React.FC = () => {
   };
 
   const handleEditField = (field: LaunchField) => {
-    if (!user || field.created_by !== user.id) {
-      setError('You can only edit launch fields you created');
-      return;
-    }
-
     setEditMode(true);
     setSelectedField(field);
     setFormData({
@@ -193,12 +186,7 @@ const LaunchFieldsTab: React.FC = () => {
     setOpenDialog(true);
   };
 
-  const handleDeleteField = async (fieldId: string, createdBy: string | null) => {
-    if (!user || createdBy !== user.id) {
-      setError('You can only delete launch fields you created');
-      return;
-    }
-
+  const handleDeleteField = async (fieldId: string) => {
     if (!confirm('Are you sure you want to delete this launch field?')) return;
 
     try {
@@ -217,11 +205,6 @@ const LaunchFieldsTab: React.FC = () => {
   };
 
   const handleSaveField = async () => {
-    if (!user) {
-      setError('You must be signed in to add launch fields');
-      return;
-    }
-
     try {
       const facilitiesArray = formData.facilities
         ? formData.facilities.split(',').map(f => f.trim()).filter(f => f)
@@ -238,7 +221,7 @@ const LaunchFieldsTab: React.FC = () => {
         facilities: facilitiesArray.length > 0 ? facilitiesArray : null,
         contact_info: formData.contact_info || null,
         is_public: formData.is_public,
-        created_by: user.id
+        created_by: null
       };
 
       if (editMode && selectedField) {
@@ -290,15 +273,13 @@ const LaunchFieldsTab: React.FC = () => {
                 <MaterialIcon icon="my_location" />
               </IconButton>
             </Tooltip>
-            {user && (
-              <Button
-                variant="contained"
-                startIcon={<MaterialIcon icon="add" />}
-                onClick={handleAddField}
-              >
-                Add Field
-              </Button>
-            )}
+            <Button
+              variant="contained"
+              startIcon={<MaterialIcon icon="add" />}
+              onClick={handleAddField}
+            >
+              Add Field
+            </Button>
           </Box>
         </Box>
 
@@ -397,24 +378,22 @@ const LaunchFieldsTab: React.FC = () => {
                   </Box>
                 </CardContent>
 
-                {user && field.created_by === user.id && (
-                  <CardActions sx={{ justifyContent: 'flex-end' }}>
-                    <Tooltip title="Edit">
-                      <IconButton size="small" onClick={() => handleEditField(field)}>
-                        <MaterialIcon icon="edit" fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Delete">
-                      <IconButton
-                        size="small"
-                        color="error"
-                        onClick={() => handleDeleteField(field.id, field.created_by)}
-                      >
-                        <MaterialIcon icon="delete" fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                  </CardActions>
-                )}
+                <CardActions sx={{ justifyContent: 'flex-end' }}>
+                  <Tooltip title="Edit">
+                    <IconButton size="small" onClick={() => handleEditField(field)}>
+                      <MaterialIcon icon="edit" fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title="Delete">
+                    <IconButton
+                      size="small"
+                      color="error"
+                      onClick={() => handleDeleteField(field.id)}
+                    >
+                      <MaterialIcon icon="delete" fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                </CardActions>
               </Card>
             </Grid>
           ))}
@@ -428,7 +407,7 @@ const LaunchFieldsTab: React.FC = () => {
           <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
             {searchQuery ? 'Try a different search term' : 'Be the first to add a launch field'}
           </Typography>
-          {user && !searchQuery && (
+          {!searchQuery && (
             <Button
               variant="contained"
               startIcon={<MaterialIcon icon="add" />}
