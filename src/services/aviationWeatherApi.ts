@@ -1,4 +1,6 @@
-const BASE_URL = 'https://aviationweather.gov/api/data';
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const PROXY_URL = `${SUPABASE_URL}/functions/v1/aviation-weather-proxy`;
 
 export function validateIcaoCode(code: string): boolean {
   const icaoPattern = /^[A-Z]{4}$/;
@@ -7,6 +9,33 @@ export function validateIcaoCode(code: string): boolean {
 
 export function formatIcaoCode(code: string): string {
   return code.trim().toUpperCase();
+}
+
+async function proxyRequest(endpoint: string, params: Record<string, string>): Promise<any> {
+  const url = new URL(PROXY_URL);
+  url.searchParams.append('endpoint', endpoint);
+
+  Object.entries(params).forEach(([key, value]) => {
+    if (value) {
+      url.searchParams.append(key, value);
+    }
+  });
+
+  const response = await fetch(url.toString(), {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    signal: AbortSignal.timeout(20000),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+  }
+
+  return response.json();
 }
 
 export interface Station {
@@ -46,15 +75,13 @@ export interface TafData {
 
 export async function getNearbyStations(lat: number, lon: number, radiusMiles: number = 50): Promise<Station[]> {
   try {
-    const response = await fetch(
-      `${BASE_URL}/stationinfo?ids=&bbox=${lon - 1},${lat - 1},${lon + 1},${lat + 1}&format=json`
-    );
+    const bbox = `${lon - 1},${lat - 1},${lon + 1},${lat + 1}`;
 
-    if (!response.ok) {
-      throw new Error(`Failed to fetch stations: ${response.statusText}`);
-    }
-
-    const stations = await response.json();
+    const stations = await proxyRequest('stationinfo', {
+      ids: '',
+      bbox: bbox,
+      format: 'json'
+    });
 
     if (!Array.isArray(stations)) {
       return [];
@@ -93,21 +120,12 @@ export async function getMetar(stationIds: string[]): Promise<MetarData[]> {
 
   try {
     const ids = validStations.map(formatIcaoCode).join(',');
-    const response = await fetch(
-      `${BASE_URL}/metar?ids=${ids}&format=json&taf=false&hours=2&bbox=&date=`,
-      {
-        signal: AbortSignal.timeout(10000)
-      }
-    );
 
-    if (!response.ok) {
-      if (response.status === 404) {
-        throw new Error('No weather data found for the specified airport(s). Verify the codes and try again.');
-      }
-      throw new Error(`Aviation Weather API error: ${response.status} ${response.statusText}`);
-    }
-
-    const data = await response.json();
+    const data = await proxyRequest('metar', {
+      ids: ids,
+      format: 'json',
+      hours: '2'
+    });
 
     if (!Array.isArray(data)) {
       console.warn('METAR API returned non-array response:', data);
@@ -161,22 +179,12 @@ export async function getTaf(stationIds: string[]): Promise<TafData[]> {
 
   try {
     const ids = validStations.map(formatIcaoCode).join(',');
-    const response = await fetch(
-      `${BASE_URL}/taf?ids=${ids}&format=json&taf=true&hours=12&bbox=&date=`,
-      {
-        signal: AbortSignal.timeout(10000)
-      }
-    );
 
-    if (!response.ok) {
-      if (response.status === 404) {
-        console.warn('No TAF data available for specified stations');
-        return [];
-      }
-      throw new Error(`Aviation Weather API error: ${response.status} ${response.statusText}`);
-    }
-
-    const data = await response.json();
+    const data = await proxyRequest('taf', {
+      ids: ids,
+      format: 'json',
+      hours: '12'
+    });
 
     if (!Array.isArray(data)) {
       console.warn('TAF API returned non-array response:', data);

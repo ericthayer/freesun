@@ -14,13 +14,32 @@ This application integrates with the Aviation Weather Center's public API to pro
 
 The Aviation Weather Center API is publicly accessible and does not require authentication or API keys.
 
+### CORS Proxy
+
+To avoid CORS (Cross-Origin Resource Sharing) issues when calling the Aviation Weather API from a browser, this application uses a Supabase Edge Function as a proxy server. The proxy:
+
+- **Handles CORS headers** properly for browser requests
+- **Adds security** by keeping API requests server-side
+- **Enables caching** with a 5-minute cache-control header
+- **Provides error handling** with timeout protection (15 seconds)
+- **Validates endpoints** to only allow legitimate requests
+
+**Edge Function:** `aviation-weather-proxy`
+
+**Query Parameters:**
+- `endpoint`: One of `metar`, `taf`, or `stationinfo` (required)
+- `ids`: Comma-separated ICAO station codes
+- `format`: Response format (default: json)
+- `hours`: Time period for historical data
+- `bbox`: Bounding box for geographic queries
+
 ### Rate Limiting
 
 While no explicit rate limits are documented, the application implements best practices:
-- Caching responses where appropriate
+- Caching responses where appropriate (5-minute cache on proxy)
 - Batching multiple station requests into single API calls
 - Limiting the number of concurrent requests
-- Using reasonable timeout values (2-12 hours for data freshness)
+- Using reasonable timeout values (15-20 seconds for API calls)
 
 ## Endpoints Used
 
