@@ -1,0 +1,199 @@
+const BASE_URL = 'https://aviationweather.gov/api/data';
+
+export interface Station {
+  stationId: string;
+  name: string;
+  lat: number;
+  lon: number;
+  distance?: number;
+}
+
+export interface MetarData {
+  rawText: string;
+  stationId: string;
+  observationTime: string;
+  temp: number | null;
+  dewpoint: number | null;
+  windDir: number | null;
+  windSpeed: number | null;
+  windGust: number | null;
+  visibility: number | null;
+  altimeter: number | null;
+  flightCategory: string;
+  lat: number;
+  lon: number;
+  name?: string;
+}
+
+export interface TafData {
+  rawText: string;
+  stationId: string;
+  issueTime: string;
+  validTimeFrom: string;
+  validTimeTo: string;
+  lat: number;
+  lon: number;
+}
+
+export async function getNearbyStations(lat: number, lon: number, radiusMiles: number = 50): Promise<Station[]> {
+  try {
+    const response = await fetch(
+      `${BASE_URL}/stationinfo?ids=&bbox=${lon - 1},${lat - 1},${lon + 1},${lat + 1}&format=json`
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch stations: ${response.statusText}`);
+    }
+
+    const stations = await response.json();
+
+    if (!Array.isArray(stations)) {
+      return [];
+    }
+
+    const stationsWithDistance = stations
+      .map((station: any) => {
+        const distance = calculateDistance(lat, lon, station.lat, station.lon);
+        return {
+          stationId: station.icaoId || station.stationId,
+          name: station.site || station.name,
+          lat: station.lat,
+          lon: station.lon,
+          distance
+        };
+      })
+      .filter((station: Station) => station.distance !== undefined && station.distance <= radiusMiles)
+      .sort((a: Station, b: Station) => (a.distance || 0) - (b.distance || 0));
+
+    return stationsWithDistance.slice(0, 10);
+  } catch (error) {
+    console.error('Error fetching nearby stations:', error);
+    return [];
+  }
+}
+
+export async function getMetar(stationIds: string[]): Promise<MetarData[]> {
+  if (stationIds.length === 0) {
+    return [];
+  }
+
+  try {
+    const ids = stationIds.join(',');
+    const response = await fetch(
+      `${BASE_URL}/metar?ids=${ids}&format=json&taf=false&hours=2&bbox=&date=`
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch METAR: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+
+    if (!Array.isArray(data)) {
+      return [];
+    }
+
+    return data.map((metar: any) => ({
+      rawText: metar.rawOb || metar.rawText || '',
+      stationId: metar.icaoId || metar.stationId || '',
+      observationTime: metar.reportTime || metar.obsTime || '',
+      temp: parseFloat(metar.temp) || null,
+      dewpoint: parseFloat(metar.dewp) || null,
+      windDir: parseInt(metar.wdir) || null,
+      windSpeed: parseInt(metar.wspd) || null,
+      windGust: parseInt(metar.wgst) || null,
+      visibility: parseFloat(metar.visib) || null,
+      altimeter: parseFloat(metar.altim) || null,
+      flightCategory: metar.fltcat || 'UNKNOWN',
+      lat: parseFloat(metar.lat) || 0,
+      lon: parseFloat(metar.lon) || 0,
+      name: metar.name || metar.site || ''
+    }));
+  } catch (error) {
+    console.error('Error fetching METAR:', error);
+    return [];
+  }
+}
+
+export async function getTaf(stationIds: string[]): Promise<TafData[]> {
+  if (stationIds.length === 0) {
+    return [];
+  }
+
+  try {
+    const ids = stationIds.join(',');
+    const response = await fetch(
+      `${BASE_URL}/taf?ids=${ids}&format=json&taf=true&hours=12&bbox=&date=`
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch TAF: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+
+    if (!Array.isArray(data)) {
+      return [];
+    }
+
+    return data.map((taf: any) => ({
+      rawText: taf.rawTAF || taf.rawText || '',
+      stationId: taf.icaoId || taf.stationId || '',
+      issueTime: taf.issueTime || taf.bulletinTime || '',
+      validTimeFrom: taf.validTimeFrom || '',
+      validTimeTo: taf.validTimeTo || '',
+      lat: parseFloat(taf.lat) || 0,
+      lon: parseFloat(taf.lon) || 0
+    }));
+  } catch (error) {
+    console.error('Error fetching TAF:', error);
+    return [];
+  }
+}
+
+function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 3959;
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.asin(Math.sqrt(a));
+  return R * c;
+}
+
+function toRad(degrees: number): number {
+  return degrees * (Math.PI / 180);
+}
+
+export function celsiusToFahrenheit(celsius: number): number {
+  return (celsius * 9/5) + 32;
+}
+
+export function getWindDirection(degrees: number): string {
+  if (degrees === null || degrees === undefined) return 'N/A';
+
+  const directions = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
+  const index = Math.round(degrees / 22.5) % 16;
+  return directions[index];
+}
+
+export function parseFlightCategory(category: string): {
+  label: string;
+  color: 'success' | 'info' | 'warning' | 'error';
+  suitability: string;
+} {
+  switch (category.toUpperCase()) {
+    case 'VFR':
+      return { label: 'VFR', color: 'success', suitability: 'Excellent for ballooning' };
+    case 'MVFR':
+      return { label: 'MVFR', color: 'info', suitability: 'Good for ballooning' };
+    case 'IFR':
+      return { label: 'IFR', color: 'warning', suitability: 'Marginal - use caution' };
+    case 'LIFR':
+      return { label: 'LIFR', color: 'error', suitability: 'Not suitable for ballooning' };
+    default:
+      return { label: 'UNKNOWN', color: 'info', suitability: 'Unknown conditions' };
+  }
+}
