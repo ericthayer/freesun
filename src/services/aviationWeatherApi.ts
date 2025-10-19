@@ -1,5 +1,14 @@
 const BASE_URL = 'https://aviationweather.gov/api/data';
 
+export function validateIcaoCode(code: string): boolean {
+  const icaoPattern = /^[A-Z]{4}$/;
+  return icaoPattern.test(code.toUpperCase());
+}
+
+export function formatIcaoCode(code: string): string {
+  return code.trim().toUpperCase();
+}
+
 export interface Station {
   stationId: string;
   name: string;
@@ -77,14 +86,25 @@ export async function getMetar(stationIds: string[]): Promise<MetarData[]> {
     return [];
   }
 
+  const validStations = stationIds.filter(id => validateIcaoCode(id));
+  if (validStations.length === 0) {
+    throw new Error('No valid ICAO airport codes provided. Codes must be 4 letters (e.g., KAPA).');
+  }
+
   try {
-    const ids = stationIds.join(',');
+    const ids = validStations.map(formatIcaoCode).join(',');
     const response = await fetch(
-      `${BASE_URL}/metar?ids=${ids}&format=json&taf=false&hours=2&bbox=&date=`
+      `${BASE_URL}/metar?ids=${ids}&format=json&taf=false&hours=2&bbox=&date=`,
+      {
+        signal: AbortSignal.timeout(10000)
+      }
     );
 
     if (!response.ok) {
-      throw new Error(`Failed to fetch METAR: ${response.statusText}`);
+      if (response.status === 404) {
+        throw new Error('No weather data found for the specified airport(s). Verify the codes and try again.');
+      }
+      throw new Error(`Aviation Weather API error: ${response.status} ${response.statusText}`);
     }
 
     const data = await response.json();
@@ -110,8 +130,14 @@ export async function getMetar(stationIds: string[]): Promise<MetarData[]> {
       name: metar.name || metar.site || ''
     }));
   } catch (error) {
+    if (error instanceof Error) {
+      if (error.name === 'TimeoutError' || error.name === 'AbortError') {
+        throw new Error('Request timeout. The Aviation Weather Center may be experiencing high traffic.');
+      }
+      throw error;
+    }
     console.error('Error fetching METAR:', error);
-    return [];
+    throw new Error('Failed to fetch METAR data. Please try again later.');
   }
 }
 
@@ -120,14 +146,26 @@ export async function getTaf(stationIds: string[]): Promise<TafData[]> {
     return [];
   }
 
+  const validStations = stationIds.filter(id => validateIcaoCode(id));
+  if (validStations.length === 0) {
+    return [];
+  }
+
   try {
-    const ids = stationIds.join(',');
+    const ids = validStations.map(formatIcaoCode).join(',');
     const response = await fetch(
-      `${BASE_URL}/taf?ids=${ids}&format=json&taf=true&hours=12&bbox=&date=`
+      `${BASE_URL}/taf?ids=${ids}&format=json&taf=true&hours=12&bbox=&date=`,
+      {
+        signal: AbortSignal.timeout(10000)
+      }
     );
 
     if (!response.ok) {
-      throw new Error(`Failed to fetch TAF: ${response.statusText}`);
+      if (response.status === 404) {
+        console.warn('No TAF data available for specified stations');
+        return [];
+      }
+      throw new Error(`Aviation Weather API error: ${response.status} ${response.statusText}`);
     }
 
     const data = await response.json();
@@ -146,6 +184,12 @@ export async function getTaf(stationIds: string[]): Promise<TafData[]> {
       lon: parseFloat(taf.lon) || 0
     }));
   } catch (error) {
+    if (error instanceof Error) {
+      if (error.name === 'TimeoutError' || error.name === 'AbortError') {
+        console.warn('TAF request timeout');
+        return [];
+      }
+    }
     console.error('Error fetching TAF:', error);
     return [];
   }

@@ -13,11 +13,14 @@ import {
   Select,
   MenuItem,
   Alert,
+  AlertTitle,
   LinearProgress,
   Chip,
   Accordion,
   AccordionSummary,
   AccordionDetails,
+  Collapse,
+  IconButton,
 } from '@mui/material';
 import MaterialIcon from '../common/MaterialIcon';
 import { getMetar, getTaf, MetarData, TafData, parseFlightCategory } from '../../services/aviationWeatherApi';
@@ -34,6 +37,7 @@ const MetarTafTab: React.FC<MetarTafTabProps> = ({ defaultStationId = '' }) => {
   const [error, setError] = useState<string | null>(null);
   const [metarData, setMetarData] = useState<MetarData[]>([]);
   const [tafData, setTafData] = useState<TafData[]>([]);
+  const [showHelp, setShowHelp] = useState(false);
 
   const handleSearch = async () => {
     if (!stationId.trim()) {
@@ -111,12 +115,50 @@ const MetarTafTab: React.FC<MetarTafTabProps> = ({ defaultStationId = '' }) => {
   return (
     <Box>
       <Paper sx={{ p: 3, mb: 3 }}>
-        <Typography variant="h6" gutterBottom>
-          METAR & TAF Search
-        </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-          Enter one or more ICAO airport codes (e.g., KAPA, KDEN, KBJC)
-        </Typography>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+          <Box>
+            <Typography variant="h6" gutterBottom>
+              METAR & TAF Search
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Enter one or more ICAO airport codes (e.g., KAPA, KDEN, KBJC)
+            </Typography>
+          </Box>
+          <IconButton
+            onClick={() => setShowHelp(!showHelp)}
+            color={showHelp ? 'primary' : 'default'}
+            size="large"
+          >
+            <MaterialIcon icon="help" />
+          </IconButton>
+        </Box>
+
+        <Collapse in={showHelp}>
+          <Alert severity="info" sx={{ mb: 3 }} icon={<MaterialIcon icon="info" />}>
+            <AlertTitle>Aviation Weather Help</AlertTitle>
+            <Typography variant="body2" paragraph>
+              <strong>METAR</strong> (Meteorological Aerodrome Report): Current weather observations updated hourly or when significant changes occur.
+            </Typography>
+            <Typography variant="body2" paragraph>
+              <strong>TAF</strong> (Terminal Aerodrome Forecast): Weather forecast valid for 12-24 hours, updated every 6 hours.
+            </Typography>
+            <Typography variant="body2" paragraph>
+              <strong>ICAO Codes</strong>: 4-letter airport identifiers. US codes typically start with 'K' (e.g., KDEN for Denver).
+            </Typography>
+            <Typography variant="body2" paragraph>
+              <strong>Flight Categories:</strong>
+            </Typography>
+            <Box component="ul" sx={{ mt: 1, mb: 1, pl: 3 }}>
+              <li><strong>VFR</strong> (Green): Ceiling {'>'} 3000 ft, Visibility {'>'} 5 mi - Excellent for ballooning</li>
+              <li><strong>MVFR</strong> (Blue): Ceiling 1000-3000 ft, Visibility 3-5 mi - Good for ballooning</li>
+              <li><strong>IFR</strong> (Orange): Ceiling 500-1000 ft, Visibility 1-3 mi - Marginal, use caution</li>
+              <li><strong>LIFR</strong> (Red): Ceiling {'<'} 500 ft, Visibility {'<'} 1 mi - Not suitable for ballooning</li>
+            </Box>
+            <Typography variant="body2">
+              <strong>Data Source:</strong> Aviation Weather Center (https://aviationweather.gov)
+            </Typography>
+          </Alert>
+        </Collapse>
 
         <Grid container spacing={2} alignItems="center">
           <Grid item xs={12} sm={6} md={4}>
