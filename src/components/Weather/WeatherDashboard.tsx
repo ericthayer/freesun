@@ -19,8 +19,13 @@ import {
   AccordionSummary,
   AccordionDetails,
   Tooltip,
+  Tabs,
+  Tab,
 } from '@mui/material';
 import MaterialIcon from '../common/MaterialIcon';
+import MetarTafTab from './MetarTafTab';
+import WeatherLogTab from './WeatherLogTab';
+import LaunchFieldsTab from './LaunchFieldsTab';
 import {
   getNearbyStations,
   getMetar,
@@ -59,6 +64,7 @@ const WeatherDashboard: React.FC = () => {
   const [stationWeather, setStationWeather] = useState<StationWeather[]>([]);
   const [selectedStation, setSelectedStation] = useState<StationWeather | null>(null);
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
+  const [activeTab, setActiveTab] = useState(0);
 
   const fetchWeatherData = async (lat: number, lon: number, locationLabel: string) => {
     setLoading(true);
@@ -337,6 +343,37 @@ const WeatherDashboard: React.FC = () => {
           </Button>
         </Paper>
       )}
+
+      <Paper sx={{ mt: 4 }}>
+        <Tabs
+          value={activeTab}
+          onChange={(_, newValue) => setActiveTab(newValue)}
+          variant="fullWidth"
+          sx={{ borderBottom: 1, borderColor: 'divider' }}
+        >
+          <Tab
+            icon={<MaterialIcon icon="description" />}
+            label="METAR/TAF"
+            iconPosition="start"
+          />
+          <Tab
+            icon={<MaterialIcon icon="history" />}
+            label="Weather Log"
+            iconPosition="start"
+          />
+          <Tab
+            icon={<MaterialIcon icon="map" />}
+            label="Launch Fields"
+            iconPosition="start"
+          />
+        </Tabs>
+
+        <Box sx={{ p: 3 }}>
+          {activeTab === 0 && <MetarTafTab defaultStationId={stationWeather[0]?.metar.stationId} />}
+          {activeTab === 1 && <WeatherLogTab />}
+          {activeTab === 2 && <LaunchFieldsTab />}
+        </Box>
+      </Paper>
 
       <Dialog
         open={selectedStation !== null}
