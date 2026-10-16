@@ -1,0 +1,112 @@
+/* Layout: 12-column bento on a mineral ground; trailhead-sign type, topo contours in the hero. */
+:root {
+  /* Colorado earth: granite mist, ponderosa pine, Red Rocks iron oxide, aspen gold, high-plains sky */
+  --ground: #eceee7;
+  --surface: #fafaf6;
+  --surface-2: #e2e6dc;
+  --ink: #1d2520;
+  --ink-2: #4c564f;
+  --line: #cdd3c7;
+  --red-rock: #a9461f;
+  --pine: #2e5a44;
+  --aspen: #b98318;
+  --sky: #3f6e98;
+  --sage: #8c9b7e;
+
+  /* Semantic state, separate from the accent */
+  --go: #2b744b;
+  --go-bg: #dcebdf;
+  --caution: #8f5a00;
+  --caution-bg: #f3e6c8;
+  --nogo: #a8261d;
+  --nogo-bg: #f5dcd8;
+
+  /* Hero panel and balloon art */
+  --hero-bg: #24392e;
+  --hero-ink: #f1efe4;
+  --hero-ink-2: #c3cbbd;
+  --contour: rgb(241 239 228 / 0.09);
+  --art-gore-a: #d9a03a;
+  --art-gore-b: #b4532a;
+  --art-gore-base: #8a3a1a;
+  --art-sun: #f4d58d;
+  --art-line: #1b2a22;
+
+  /* Chat */
+  --bubble: #ffffff;
+  --bubble-mine: #d9e8dc;
+
+  --font-display: 'Big Shoulders Display', 'Arial Narrow', 'Roboto Condensed', sans-serif;
+  --font-body: 'Public Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-data: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+
+  --step--1: 0.8125rem;
+  --step-0: 0.9375rem;
+  --step-1: 1.125rem;
+  --step-2: 1.5rem;
+  --step-3: 2.125rem;
+  --step-4: 3.5rem;
+
+  --radius: 18px;
+  --radius-sm: 10px;
+  --gap: 14px;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --ground: #111714;
+    --surface: #19211d;
+    --surface-2: #222d27;
+    --ink: #e9ece4;
+    --ink-2: #a9b3a8;
+    --line: #2e3a33;
+    --red-rock: #e2845a;
+    --pine: #7db898;
+    --aspen: #e2b451;
+    --sky: #8db6dd;
+    --sage: #9aab8c;
+    --go: #79d39b;
+    --go-bg: #1d3427;
+    --caution: #ecbd5c;
+    --caution-bg: #392c12;
+    --nogo: #f39b90;
+    --nogo-bg: #3f1d1a;
+    --hero-bg: #1a2e24;
+    --hero-ink: #f1efe4;
+    --hero-ink-2: #b5bfae;
+    --contour: rgb(241 239 228 / 0.07);
+    --art-line: #0f1a14;
+    --bubble: #2d3b33;
+    --bubble-mine: #2a4a37;
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme='dark'] {
+  --ground: #111714;
+  --surface: #19211d;
+  --surface-2: #222d27;
+  --ink: #e9ece4;
+  --ink-2: #a9b3a8;
+  --line: #2e3a33;
+  --red-rock: #e2845a;
+  --pine: #7db898;
+  --aspen: #e2b451;
+  --sky: #8db6dd;
+  --sage: #9aab8c;
+  --go: #79d39b;
+  --go-bg: #1d3427;
+  --caution: #ecbd5c;
+  --caution-bg: #392c12;
+  --nogo: #f39b90;
+  --nogo-bg: #3f1d1a;
+  --hero-bg: #1a2e24;
+  --hero-ink: #f1efe4;
+  --hero-ink-2: #b5bfae;
+  --contour: rgb(241 239 228 / 0.07);
+  --art-line: #0f1a14;
+  --bubble: #2d3b33;
+  --bubble-mine: #2a4a37;
+  color-scheme: dark;
+}

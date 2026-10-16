@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>FreeSun Crew Board</title>
+    <meta name="description" content="Crew, schedule, flight log, Chatfield launch weather, chat and bacon for the Free Sun hot air balloon crew." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&family=IBM+Plex+Mono:wght@400;600&family=Public+Sans:wght@400;600;700&display=swap"
+    />
+  </head>
+  <body>
+    <div class="shell">
+      <header class="masthead">
+        <div>
+          <h1 class="masthead__brand">Free<span>Sun</span> Crew Board</h1>
+          <p class="masthead__sub">Chatfield State Park · Littleton, Colorado · 5,449 ft</p>
+        </div>
+        <div class="masthead__tools">
+          <p class="sync-status" id="sync-status" role="status" aria-live="polite">Loading live sources…</p>
+          <fs-theme-toggle></fs-theme-toggle>
+        </div>
+      </header>
+
+      <main class="board">
+        <div class="bento">
+          <fs-hero data-key="fleet" data-area="hero"></fs-hero>
+          <fs-weather data-key="weather" data-area="wx"></fs-weather>
+          <fs-schedule data-key="schedule" data-area="next"></fs-schedule>
+          <fs-crew data-key="crew" data-area="crew"></fs-crew>
+          <fs-history data-key="history" data-area="hist"></fs-history>
+          <fs-bacon data-key="bacon" data-area="bacon"></fs-bacon>
+          <fs-flight-log data-key="logs" data-area="log"></fs-flight-log>
+          <fs-chat data-key="chat" data-area="chat"></fs-chat>
+        </div>
+      </main>
+
+      <footer class="page-foot">
+        Crew, fleet, schedule and log come from the club app at
+        <a href="https://rockymountainfly.com/" target="_blank" rel="noopener">rockymountainfly.com</a>. Weather from
+        Open-Meteo for the Montgolfier Balloon Port. The pilot in command makes the launch call.
+      </footer>
+    </div>
+    <script type="module" src="/src/dashboard/main.ts"></script>
+  </body>
+</html>
