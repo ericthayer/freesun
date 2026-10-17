@@ -1,0 +1,95 @@
+/*
+ * MapTracker palette borrows from the FAA VFR sectional chart: magenta for the route,
+ * aero blue for the compass rose and rings, hypsometric green-to-tan terrain, blue hydro.
+ * Burner amber marks the balloon itself. Night mode follows a dimmed cockpit chart.
+ */
+:root {
+  --mt-ground: #dfe3d4;
+  --mt-panel: #f3f4ec;
+  --mt-panel-2: #e7eadd;
+  --mt-line: #c3c9b7;
+  --mt-ink: #1b2420;
+  --mt-ink-2: #4d5852;
+
+  --mt-land: #e4e9d6;
+  --mt-relief: #b39b6c;
+  --mt-shade: #3d3a2c;
+  --mt-shade-alpha: 0.32;
+  --mt-contour: rgb(140 104 58 / 0.42);
+  --mt-water: #b4d4e4;
+  --mt-shore: #2e6f9e;
+  --mt-road: #c4542f;
+  --mt-road-casing: #f7f3e6;
+  --mt-halo: rgb(240 243 232 / 0.9);
+
+  --mt-magenta: #9e1477;
+  --mt-aero: #1d5a93;
+  --mt-wind: #3c6e8f;
+  --mt-burner: #d9831a;
+  --mt-burner-2: #a8461b;
+  --mt-sky-top: #c9d9e6;
+  --mt-sky-bottom: #eadfca;
+
+  --mt-font-display: 'Big Shoulders Display', 'Arial Narrow', 'Roboto Condensed', sans-serif;
+  --mt-font: 'Public Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  --mt-rail: 340px;
+  --mt-radius: 6px;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --mt-ground: #0f1519;
+    --mt-panel: #141b20;
+    --mt-panel-2: #1b242a;
+    --mt-line: #2b363d;
+    --mt-ink: #e6ebe6;
+    --mt-ink-2: #a4b0ab;
+    --mt-land: #182128;
+    --mt-relief: #6c6248;
+    --mt-shade: #000000;
+    --mt-shade-alpha: 0.5;
+    --mt-contour: rgb(201 165 118 / 0.26);
+    --mt-water: #183852;
+    --mt-shore: #6aaed8;
+    --mt-road: #d07c5c;
+    --mt-road-casing: #10171c;
+    --mt-halo: rgb(20 28 34 / 0.88);
+    --mt-magenta: #f06bc6;
+    --mt-aero: #86b9e8;
+    --mt-wind: #8cc0dc;
+    --mt-burner: #f0a63c;
+    --mt-burner-2: #c9622a;
+    --mt-sky-top: #0d1a2a;
+    --mt-sky-bottom: #3b3326;
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme='dark'] {
+  --mt-ground: #0f1519;
+  --mt-panel: #141b20;
+  --mt-panel-2: #1b242a;
+  --mt-line: #2b363d;
+  --mt-ink: #e6ebe6;
+  --mt-ink-2: #a4b0ab;
+  --mt-land: #182128;
+  --mt-relief: #6c6248;
+  --mt-shade: #000000;
+  --mt-shade-alpha: 0.5;
+  --mt-contour: rgb(201 165 118 / 0.26);
+  --mt-water: #183852;
+  --mt-shore: #6aaed8;
+  --mt-road: #d07c5c;
+  --mt-road-casing: #10171c;
+  --mt-halo: rgb(20 28 34 / 0.88);
+  --mt-magenta: #f06bc6;
+  --mt-aero: #86b9e8;
+  --mt-wind: #8cc0dc;
+  --mt-burner: #f0a63c;
+  --mt-burner-2: #c9622a;
+  --mt-sky-top: #0d1a2a;
+  --mt-sky-bottom: #3b3326;
+  color-scheme: dark;
+}

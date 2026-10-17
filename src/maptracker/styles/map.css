@@ -1,0 +1,462 @@
+mt-map {
+  position: relative;
+  display: block;
+  min-height: 0;
+  overflow: hidden;
+  background: linear-gradient(var(--mt-sky-top), var(--mt-sky-bottom));
+}
+
+.map__viewport {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  perspective: 1100px;
+  perspective-origin: 50% 20%;
+  cursor: grab;
+  touch-action: none;
+}
+
+.map__viewport:active {
+  cursor: grabbing;
+}
+
+.map__viewport:focus-visible {
+  outline-offset: -4px;
+}
+
+.map__plane {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  transform-origin: 50% 78%;
+  transition: transform 0.7s cubic-bezier(0.3, 0.7, 0.2, 1);
+}
+
+mt-map[data-3d] .map__plane {
+  transform: rotateX(56deg) scale(1.35);
+}
+
+/* Horizon haze so the far edge of the tilted chart fades into the dawn sky. */
+mt-map[data-3d] .map__viewport::after {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 30%;
+  background: linear-gradient(var(--mt-sky-top) 20%, transparent);
+  pointer-events: none;
+}
+
+.chart {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  --s: 1;
+}
+
+.chart path,
+.chart circle {
+  vector-effect: non-scaling-stroke;
+}
+
+/* Terrain */
+.chart-land {
+  fill: var(--mt-land);
+}
+.chart-relief {
+  fill: var(--mt-relief);
+}
+.chart-shade {
+  fill: var(--mt-shade);
+  opacity: var(--mt-shade-alpha);
+}
+.contour {
+  fill: none;
+  stroke: var(--mt-contour);
+  stroke-width: 0.7px;
+}
+.contour--index {
+  stroke-width: 1.3px;
+}
+.water {
+  fill: var(--mt-water);
+  stroke: var(--mt-shore);
+  stroke-width: 1.2px;
+  stroke-linejoin: round;
+}
+.river {
+  fill: none;
+  stroke: var(--mt-shore);
+  stroke-width: 1.8px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.road-casing,
+.road {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.road-casing {
+  stroke: var(--mt-road-casing);
+  stroke-width: 5px;
+}
+.road {
+  stroke: var(--mt-road);
+  stroke-width: 2.4px;
+}
+
+/* Compass rose and range rings */
+.rose-ring,
+.rose-ticks,
+.range-ring {
+  fill: none;
+  stroke: var(--mt-aero);
+}
+.rose-ring,
+.rose-ticks {
+  stroke-width: 1.1px;
+}
+.range-ring {
+  stroke-width: 0.9px;
+  stroke-dasharray: 2 5;
+  opacity: 0.8;
+}
+
+/* Labels keep a constant screen size: --s is world units per screen pixel. */
+.chart text {
+  font-family: var(--mt-font);
+  font-size: calc(var(--s) * 12px);
+  paint-order: stroke;
+  stroke: var(--mt-halo);
+  stroke-width: calc(var(--s) * 3px);
+  stroke-linejoin: round;
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
+.rose-label,
+.ring-label {
+  fill: var(--mt-aero);
+  font-weight: 600;
+}
+.rose-label {
+  font-size: calc(var(--s) * 10.5px);
+}
+.ring-label {
+  font-size: calc(var(--s) * 10px);
+}
+.chart-label {
+  fill: var(--mt-ink-2);
+}
+.chart-label--water {
+  fill: var(--mt-shore);
+  font-style: italic;
+  font-size: calc(var(--s) * 13px);
+}
+.chart-label--road {
+  fill: var(--mt-road);
+  font-weight: 700;
+  font-size: calc(var(--s) * 11px);
+}
+.chart-label--place {
+  fill: var(--mt-ink);
+  font-weight: 600;
+  font-size: calc(var(--s) * 13px);
+  letter-spacing: 0.04em;
+}
+.chart-label--terrain {
+  fill: var(--mt-ink-2);
+  font-style: italic;
+  letter-spacing: 0.12em;
+}
+.chart-label--port {
+  fill: var(--mt-magenta);
+  font-weight: 700;
+  text-anchor: end;
+  transform: translate(calc(var(--s) * -14px), calc(var(--s) * 2px));
+}
+.chart-label--landing {
+  fill: var(--mt-magenta);
+  font-weight: 700;
+  text-anchor: start;
+  transform: translate(calc(var(--s) * 14px), 0);
+}
+
+/* Flight */
+.track {
+  fill: none;
+  stroke: var(--mt-magenta);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.track--planned {
+  stroke-width: 2px;
+  stroke-dasharray: 5 6;
+  opacity: 0.55;
+}
+.track--flown {
+  stroke-width: 4px;
+}
+.chase-route {
+  fill: none;
+  stroke: var(--mt-aero);
+  stroke-width: 2px;
+  stroke-dasharray: 0.5 5;
+  stroke-linecap: round;
+  opacity: 0.85;
+}
+.landing-mark {
+  transform: scale(calc(var(--s) * 8));
+}
+.landing-mark circle,
+.landing-mark path {
+  fill: none;
+  stroke: var(--mt-magenta);
+  stroke-width: 2px;
+}
+.drift-line {
+  stroke: var(--mt-wind);
+  stroke-width: 1.5px;
+  opacity: 0.8;
+}
+.drift-end {
+  fill: var(--mt-wind);
+  r: calc(var(--s) * 3.5px);
+}
+.chart-label--drift {
+  fill: var(--mt-wind);
+  font-weight: 600;
+  font-size: calc(var(--s) * 11px);
+  text-anchor: start;
+  transform: translate(calc(var(--s) * 7px), 0);
+}
+
+mt-map[data-satellite] .chart-vector {
+  display: none;
+}
+mt-map[data-satellite] .map__viewport {
+  --mt-halo: rgb(15 20 24 / 0.75);
+  --mt-ink: #f4f1e6;
+  --mt-ink-2: #e2ddcf;
+  --mt-shore: #9fd2f0;
+  --mt-aero: #a9d0f5;
+  --mt-wind: #b6e0f5;
+  --mt-magenta: #ff79d2;
+}
+mt-map[data-hide-drift] .chart-drift,
+mt-map[data-hide-contours] .chart-contours,
+mt-map[data-hide-rose] .chart-rose,
+mt-map[data-hide-chase] .chase-route,
+mt-map[data-hide-chase] .truck {
+  display: none;
+}
+
+/* HTML overlay: balloon, truck and altitude pickets share the chart plane. */
+.flight-overlay {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  pointer-events: none;
+}
+
+.bln,
+.truck,
+.picket {
+  position: absolute;
+  transform-style: preserve-3d;
+}
+
+.bln {
+  width: 0;
+  height: 0;
+}
+
+.bln__shadow {
+  position: absolute;
+  width: 18px;
+  height: 7px;
+  margin: -3.5px 0 0 -9px;
+  border-radius: 50%;
+  background: rgb(0 0 0 / 0.28);
+  filter: blur(1.5px);
+}
+
+.bln__stand {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform: translate(-50%, 0);
+  transform-origin: 50% 100%;
+  transition: transform 0.7s cubic-bezier(0.3, 0.7, 0.2, 1);
+}
+
+.bln__glyph {
+  order: -1;
+  width: 34px;
+  height: auto;
+  filter: drop-shadow(0 2px 2px rgb(0 0 0 / 0.3));
+}
+
+.glyph-env {
+  fill: var(--mt-burner);
+  stroke: var(--mt-burner-2);
+  stroke-width: 1.4;
+}
+.glyph-gore {
+  fill: none;
+  stroke: var(--mt-burner-2);
+  stroke-width: 1;
+  opacity: 0.8;
+}
+.glyph-line {
+  stroke: var(--mt-ink);
+  stroke-width: 1;
+}
+.glyph-basket {
+  fill: #7a5530;
+}
+
+.bln__tag {
+  order: -2;
+  margin-bottom: 4px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--mt-magenta);
+  color: #fff;
+  font: 700 0.75rem/1.2 var(--mt-font);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.bln__stalk {
+  display: none;
+  width: 2px;
+  height: var(--h, 0);
+  background: linear-gradient(var(--mt-magenta), transparent);
+}
+
+.picket {
+  display: none;
+  width: 2px;
+  height: var(--h, 0);
+  margin: calc(-1 * var(--h, 0)) 0 0 -1px;
+  transform-origin: 50% 100%;
+  transform: rotateX(-56deg);
+  background: linear-gradient(var(--mt-magenta), color-mix(in srgb, var(--mt-magenta) 10%, transparent));
+  opacity: 0.1;
+}
+
+.picket.is-flown {
+  opacity: 0.6;
+}
+
+mt-map[data-3d] .picket,
+mt-map[data-3d] .bln__stalk {
+  display: block;
+}
+
+mt-map[data-3d] .bln__stand {
+  transform: translate(-50%, 0) rotateX(-56deg);
+}
+
+.truck__dot {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  margin: -6px 0 0 -6px;
+  border-radius: 3px;
+  background: var(--mt-aero);
+  border: 2px solid var(--mt-panel);
+  box-shadow: 0 0 0 1px var(--mt-aero);
+}
+
+/* Controls */
+.map__tools {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  max-width: calc(100% - 24px);
+}
+
+.map__layers {
+  position: absolute;
+  top: 56px;
+  right: 12px;
+  background: var(--mt-panel);
+  border: 1px solid var(--mt-line);
+  border-radius: var(--mt-radius);
+  font-size: 0.8125rem;
+}
+
+.map__layers summary {
+  padding: 7px 10px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.map__layers[open] {
+  padding-bottom: 6px;
+}
+
+.layer-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px;
+}
+
+.layer-row input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--mt-aero);
+}
+
+.map__scale,
+.map__exag,
+.map__attr {
+  position: absolute;
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--mt-ink);
+  background: var(--mt-halo);
+  border-radius: 4px;
+  padding: 2px 6px;
+}
+
+.map__scale {
+  left: 12px;
+  bottom: 12px;
+  font-weight: 600;
+}
+
+.map__scale::before {
+  content: '';
+  display: block;
+  width: var(--w, 100px);
+  height: 6px;
+  margin-bottom: 3px;
+  border: 2px solid var(--mt-ink);
+  border-top: 0;
+}
+
+mt-map[data-3d] .map__scale {
+  display: none;
+}
+
+.map__exag {
+  left: 12px;
+  bottom: 12px;
+}
+
+.map__attr {
+  right: 12px;
+  bottom: 12px;
+}
