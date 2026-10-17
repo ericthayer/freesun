@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>FreeSun Flight Deck</title>
+    <meta name="description" content="Heads-up view of the Chatfield launch field: sunrise launch call, a simulated flight over the park, crew, log and winds for the Free Sun balloon crew." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=Public+Sans:wght@400;500;600;700&display=swap"
+    />
+  </head>
+  <body>
+    <div class="hud">
+      <nav class="rail" aria-label="FreeSun dashboards">
+        <a class="rail__brand" href="https://rockymountainfly.com/" target="_blank" rel="noopener" aria-label="FreeSun club site (opens in a new tab)">
+          <svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="6" /><path d="M16 3v4M16 25v4M3 16h4M25 16h4M6.8 6.8l2.8 2.8M22.4 22.4l2.8 2.8M6.8 25.2l2.8-2.8M22.4 9.6l2.8-2.8" /></svg>
+        </a>
+        <a class="rail__link" href="hud.html" aria-current="page" title="Flight deck" data-repo-only>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3c4 0 6.5 2.8 6.5 6.3 0 3.4-3.2 6.2-4.2 8.2h-4.6c-1-2-4.2-4.8-4.2-8.2C5.5 5.8 8 3 12 3zM10 19.5h4v2h-4z" /></svg>
+          <span>Deck</span>
+        </a>
+        <a class="rail__link" href="dashboard.html" title="Crew board" data-repo-only>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h7v9H4zM13 4h7v5h-7zM13 11h7v9h-7zM4 15h7v5H4z" /></svg>
+          <span>Board</span>
+        </a>
+        <a class="rail__link" href="https://claude.ai/artifact/CodWhe9W1w5o6oABCRXuZ1" target="_blank" rel="noopener" title="Bacon tracker (opens in a new tab)">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 16c3-1 3-5 6-6s4 2 7 1 3-4 3-4M4 20c3-1 3-5 6-6s4 2 7 1 3-4 3-4" /></svg>
+          <span>Bacon</span>
+        </a>
+      </nav>
+
+      <header class="top">
+        <div class="top__title">
+          <h1>FreeSun flight deck</h1>
+          <p>Montgolfier Balloon Port, Chatfield State Park, Littleton</p>
+        </div>
+        <hud-readouts></hud-readouts>
+        <p class="sync-status" id="sync-status" role="status" aria-live="polite">Loading live sources…</p>
+        <fs-theme-toggle></fs-theme-toggle>
+      </header>
+
+      <main class="stage">
+        <hud-map class="stage__map" aria-label="Chatfield State Park map"></hud-map>
+        <div class="col col--left">
+          <hud-flight-card></hud-flight-card>
+          <hud-telemetry></hud-telemetry>
+        </div>
+        <div class="col col--right">
+          <hud-roster></hud-roster>
+          <hud-winds></hud-winds>
+        </div>
+        <div class="foot">
+          <ul class="legend" aria-label="Map legend">
+            <li><span class="swatch swatch--launch" aria-hidden="true"></span>Launch site</li>
+            <li><span class="swatch swatch--flown" aria-hidden="true"></span>Flown</li>
+            <li><span class="swatch swatch--planned" aria-hidden="true"></span>Planned drift</li>
+            <li><span class="swatch swatch--ring" aria-hidden="true"></span>1–3 mi rings</li>
+          </ul>
+          <hud-replay></hud-replay>
+        </div>
+      </main>
+    </div>
+    <script type="module" src="/src/hud/main.ts"></script>
+  </body>
+</html>

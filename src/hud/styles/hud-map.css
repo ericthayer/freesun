@@ -1,0 +1,399 @@
+/* Map plane, base layers, HUD marks and the airborne overlay. Sizes are world px (zoom 14). */
+hud-map {
+  display: block;
+  overflow: hidden;
+  background: var(--land);
+}
+
+.map__sky {
+  position: absolute;
+  inset: 0;
+  background: var(--land);
+  transition: background 600ms ease;
+}
+
+hud-map[data-mode='3d'] .map__sky {
+  background: linear-gradient(to bottom, var(--sky-top) 0%, var(--sky-glow) 34%, var(--land) 58%);
+}
+
+.map__viewport {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.map__plane {
+  position: absolute;
+  transform-origin: 50% 50%;
+  will-change: transform;
+  mask-image: radial-gradient(closest-side, #000 72%, transparent 100%);
+}
+
+.map__plane.is-animating {
+  transition: transform 700ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.map__svg {
+  display: block;
+}
+
+.map__air {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: visible;
+}
+
+/* ---------- chart base ---------- */
+.land {
+  fill: var(--land);
+}
+
+.contour {
+  fill: none;
+  stroke: var(--contour);
+  stroke-width: 1.4;
+}
+
+.contour--index {
+  stroke: var(--contour-index);
+  stroke-width: 2;
+}
+
+.water {
+  fill: var(--water);
+}
+
+.water-edge {
+  fill: none;
+  stroke: var(--water-edge);
+  stroke-width: 2.5;
+}
+
+.line {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.line--river {
+  stroke: var(--river);
+  stroke-width: 3.5;
+}
+
+.line--road {
+  stroke: var(--road);
+  stroke-width: 5;
+}
+
+hud-map[data-layer='imagery'] .layer-chart {
+  display: none;
+}
+
+/* ---------- HUD marks ---------- */
+.place {
+  font: 500 calc(14px * var(--k, 1)) var(--font-body);
+  fill: var(--label);
+  paint-order: stroke;
+  stroke: var(--label-halo);
+  stroke-width: calc(4px * var(--k, 1));
+  stroke-linejoin: round;
+}
+
+.place--water,
+.place--river {
+  font-style: italic;
+  fill: var(--water-edge);
+}
+
+.place--water {
+  font-size: calc(17px * var(--k, 1));
+}
+
+.place--town {
+  font-weight: 700;
+  font-size: calc(14px * var(--k, 1));
+}
+
+.place--road {
+  font-size: calc(12px * var(--k, 1));
+}
+
+.ring circle {
+  fill: none;
+  stroke: var(--ink-3);
+  stroke-width: 1.6;
+  stroke-dasharray: 6 10;
+  opacity: 0.6;
+}
+
+.ring__label {
+  font: 600 calc(12px * var(--k, 1)) var(--font-body);
+  fill: var(--ink-3);
+}
+
+.drift {
+  fill: none;
+  stroke: var(--ink-3);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.35;
+}
+
+.track {
+  fill: none;
+  stroke: var(--burner);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.track--planned {
+  stroke-width: calc(3px * var(--k, 1));
+  stroke-dasharray: 2 12;
+  opacity: 0.85;
+}
+
+.track--flown {
+  stroke-width: calc(4px * var(--k, 1));
+}
+
+.mark__halo {
+  fill: var(--burner-soft);
+  stroke: var(--burner);
+  stroke-width: 2;
+}
+
+.mark__core {
+  fill: var(--burner);
+}
+
+.mark__ring {
+  fill: var(--glass-strong);
+  stroke: var(--burner);
+  stroke-width: 3;
+}
+
+.mark__x {
+  stroke: var(--burner);
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+.mark__label {
+  font: 700 calc(14px * var(--k, 1)) var(--font-body);
+  fill: var(--ink);
+  paint-order: stroke;
+  stroke: var(--label-halo);
+  stroke-width: calc(4px * var(--k, 1));
+  stroke-linejoin: round;
+}
+
+hud-map[data-layer='imagery'] :is(.place, .mark__label, .ring__label) {
+  fill: #f3f4ef;
+  stroke: rgb(10 16 14 / 0.65);
+}
+
+hud-map[data-layer='imagery'] :is(.ring circle, .drift) {
+  stroke: #f3f4ef;
+}
+
+/* ---------- airborne overlay ---------- */
+.air__curtain {
+  fill: var(--burner-soft);
+}
+
+.air__planned {
+  fill: none;
+  stroke: var(--burner);
+  stroke-width: 1.5;
+  stroke-dasharray: 3 7;
+  opacity: 0.45;
+}
+
+.air__flown {
+  fill: none;
+  stroke: var(--burner);
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+}
+
+.air__tether {
+  stroke: var(--burner);
+  stroke-width: 2;
+}
+
+.air__shadow {
+  fill: rgb(0 0 0 / 0.32);
+}
+
+.balloon__envelope {
+  fill: var(--envelope-a);
+  stroke: var(--envelope-b);
+  stroke-width: 1.4;
+}
+
+.balloon__gores {
+  fill: none;
+  stroke: var(--envelope-b);
+  stroke-width: 1.1;
+}
+
+.balloon__lines {
+  stroke: var(--ink-2);
+  stroke-width: 1;
+}
+
+.balloon__basket {
+  fill: #6e4b2a;
+}
+
+.air__tag {
+  font: 700 19px var(--font-display);
+  letter-spacing: 0.02em;
+  fill: var(--ink);
+  paint-order: stroke;
+  stroke: var(--label-halo);
+  stroke-width: 5px;
+  stroke-linejoin: round;
+}
+
+hud-map[data-layer='imagery'] .air__tag {
+  fill: #fff;
+  stroke: rgb(10 16 14 / 0.7);
+}
+
+/* ---------- controls ---------- */
+.map__controls {
+  position: absolute;
+  z-index: 1;
+  right: calc(var(--col-right) + var(--gap) * 2);
+  bottom: calc(var(--gap) + 92px);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.map-btn-stack,
+.seg {
+  display: flex;
+  border-radius: var(--r-ctl);
+  background: var(--glass);
+  border: 1px solid var(--glass-edge);
+  box-shadow: var(--glass-shadow);
+  backdrop-filter: blur(14px);
+  padding: 3px;
+  gap: 2px;
+}
+
+.map-btn-stack {
+  flex-direction: column;
+}
+
+.map-btn,
+.seg__btn {
+  min-width: 44px;
+  min-height: 40px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--ink);
+  font: 600 var(--step--1) / 1 var(--font-body);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  padding: 0 10px;
+}
+
+.map-btn:hover,
+.seg__btn:hover:not(:disabled, [aria-pressed='true']) {
+  background: var(--hairline);
+}
+
+.seg__btn[aria-pressed='true'] {
+  background: var(--burner);
+  color: var(--glass-strong);
+}
+
+.seg__btn:disabled {
+  color: var(--ink-3);
+  cursor: not-allowed;
+}
+
+.north {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--glass);
+  border: 1px solid var(--glass-edge);
+  backdrop-filter: blur(14px);
+}
+
+.north svg {
+  width: 28px;
+  height: 28px;
+}
+
+.north g {
+  transform-origin: 12px 12px;
+  transition: transform 700ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.north__n {
+  fill: var(--nogo);
+}
+
+.north__s {
+  fill: var(--ink-3);
+}
+
+.icon {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.map__credit {
+  position: absolute;
+  z-index: 1;
+  top: 84px;
+  right: calc(var(--col-right) + var(--gap) * 2);
+  margin: 0;
+  max-width: 34ch;
+  text-align: right;
+  font-size: var(--step--2);
+  color: var(--ink-2);
+  text-shadow: 0 0 6px var(--label-halo);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .map__plane.is-animating,
+  .map__sky,
+  .north g {
+    transition: none;
+  }
+}
+
+@container page (max-width: 980px) {
+  .map__controls {
+    right: 10px;
+    bottom: 10px;
+  }
+
+  .map__credit {
+    top: 10px;
+    bottom: auto;
+    left: 12px;
+    right: auto;
+    text-align: left;
+    max-width: 24ch;
+  }
+}
