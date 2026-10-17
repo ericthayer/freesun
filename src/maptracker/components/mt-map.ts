@@ -223,6 +223,7 @@ export class MtMap extends HTMLElement {
   }
 
   #frame = 0;
+  #arrow: SVGMarkerElement | null = null;
   #render(): void {
     cancelAnimationFrame(this.#frame);
     this.#frame = requestAnimationFrame(() => this.#paint());
@@ -245,6 +246,11 @@ export class MtMap extends HTMLElement {
     const vb = { x: cx - (this.#size.w * upp) / 2, y: cy - (this.#size.h * upp) / 2, w: this.#size.w * upp, h: this.#size.h * upp };
     this.#svg.setAttribute('viewBox', `${vb.x.toFixed(1)} ${vb.y.toFixed(1)} ${vb.w.toFixed(1)} ${vb.h.toFixed(1)}`);
     this.#svg.style.setProperty('--s', upp.toFixed(4));
+    // Markers in user space keep a constant screen size only if resized with zoom.
+    const head = (9 * upp).toFixed(2);
+    this.#arrow ??= this.#svg.querySelector('#mt-arrow');
+    this.#arrow?.setAttribute('markerWidth', head);
+    this.#arrow?.setAttribute('markerHeight', head);
     const toPct = (p: Point): Point => ({ x: ((p.x - vb.x) / vb.w) * 100, y: ((p.y - vb.y) / vb.h) * 100 });
     this.#overlay.layout(toPct, UNITS_PER_METER / upp);
     if (this.#satellite) renderTiles(this.#chart.tiles, vb, upp);

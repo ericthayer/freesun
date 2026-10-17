@@ -57,7 +57,7 @@ function roads(): SVGGElement {
 /** Compass rose at the launch site, oriented to magnetic north like a sectional VOR rose. */
 function rose(): SVGGElement {
   const c = project(LAUNCH);
-  const r = project(offset(LAUNCH, 90, 1150)).x - c.x;
+  const r = project(offset(LAUNCH, 90, 820)).x - c.x;
   const ticks: string[] = [];
   const labels: SVGTextElement[] = [];
   for (let deg = 0; deg < 360; deg += 5) {
@@ -67,13 +67,13 @@ function rose(): SVGGElement {
       `M${(c.x + Math.cos(a) * r).toFixed(1)} ${(c.y + Math.sin(a) * r).toFixed(1)}` +
         `L${(c.x + Math.cos(a) * r * (1 - len)).toFixed(1)} ${(c.y + Math.sin(a) * r * (1 - len)).toFixed(1)}`,
     );
-    if (deg % 30 === 0) {
-      const lr = r * 0.8;
+    if (deg % 90 === 0) {
+      const lr = r * 1.13;
       labels.push(
         s(
           'text',
           { class: 'rose-label', x: (c.x + Math.cos(a) * lr).toFixed(1), y: (c.y + Math.sin(a) * lr).toFixed(1) },
-          deg === 0 ? 'MN' : String(deg / 10),
+          deg === 0 ? 'MN' : String(deg),
         ),
       );
     }
@@ -102,6 +102,7 @@ function labels(): SVGGElement {
   return s(
     'g',
     { class: 'chart-labels', 'aria-hidden': 'true' },
+    s('circle', { class: 'port-mark', cx: port.x.toFixed(1), cy: port.y.toFixed(1) }),
     ...LABELS.map((l) => {
       const p = project(l.at);
       return s(

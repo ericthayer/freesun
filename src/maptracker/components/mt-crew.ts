@@ -13,11 +13,27 @@ export interface CrewPanelData {
 /** Ground crew roles on a chase, assigned in roster order. */
 const CHASE_ROLES = ['Chase driver', 'Crown line', 'Navigator', 'Retrieve'] as const;
 
-/** Who is flying, who is chasing, and what is next on the calendar. */
-export class MtCrew extends HTMLElement {
-  set data(d: CrewPanelData) {
+/** The balloon and pilot in command, shown at the top of the rail. */
+export class MtCraft extends HTMLElement {
+  set data(d: Pick<CrewPanelData, 'crew' | 'fleet'>) {
     const balloon = d.fleet.value.find((b) => b.status === 'active') ?? d.fleet.value[0];
     const pilot = d.crew.value.find((c) => c.role === 'Pilot' && c.availability === 'available');
+    replaceChildren(
+      this,
+      balloonGlyph('craft__glyph'),
+      h('div', {},
+        h('h2', { class: 'craft__name' }, balloon?.name ?? 'Balloon'),
+        h('p', { class: 'craft__spec' }, balloon ? `${balloon.type}, ${balloon.volume}, ${balloon.burner} burner` : ''),
+        pilot ? h('p', { class: 'craft__pilot' }, `Pilot in command: ${pilot.name}`) : null),
+    );
+  }
+}
+
+customElements.define('mt-craft', MtCraft);
+
+/** Who is chasing and what is next on the calendar. */
+export class MtCrew extends HTMLElement {
+  set data(d: CrewPanelData) {
     const chase = d.crew.value.filter((c) => c.role === 'Ground Crew' && c.availability === 'available').slice(0, CHASE_ROLES.length);
     const today = new Date().toISOString().slice(0, 10);
     const flights = d.schedule.value.filter((x) => x.kind === 'flight');
@@ -26,12 +42,6 @@ export class MtCrew extends HTMLElement {
 
     replaceChildren(
       this,
-      h('section', { class: 'craft', 'aria-labelledby': 'mt-craft' },
-        balloonGlyph('craft__glyph'),
-        h('div', {},
-          h('h2', { class: 'craft__name', id: 'mt-craft' }, balloon?.name ?? 'Balloon'),
-          h('p', { class: 'craft__spec' }, balloon ? `${balloon.type}, ${balloon.volume}, ${balloon.burner} burner` : ''),
-          pilot ? h('p', { class: 'craft__pilot' }, `Pilot in command: ${pilot.name}`) : null)),
       h('section', { class: 'panel', 'aria-labelledby': 'mt-chase' },
         h('h2', { class: 'panel__title', id: 'mt-chase' }, 'Chase crew'),
         chase.length

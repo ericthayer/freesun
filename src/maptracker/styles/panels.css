@@ -70,11 +70,6 @@
   color: var(--mt-magenta);
 }
 
-.telemetry__wind {
-  margin: 12px 0 0;
-  font-size: 0.8125rem;
-  color: var(--mt-ink-2);
-}
 
 /* Winds aloft */
 .winds {
@@ -86,7 +81,7 @@
 
 .wind {
   display: grid;
-  grid-template-columns: 5.2rem 22px 4.2rem 1fr;
+  grid-template-columns: 4.8rem 22px 4rem 1fr auto;
   align-items: center;
   gap: 8px;
   padding: 5px 0 5px 10px;
@@ -98,11 +93,24 @@
 
 .wind.is-near {
   border-left-color: var(--mt-magenta);
-  background: color-mix(in srgb, var(--mt-magenta) 8%, transparent);
 }
 
 .wind__alt {
   font-weight: 600;
+}
+
+.wind__here {
+  visibility: hidden;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: var(--mt-magenta);
+  color: var(--mt-panel);
+  font-size: 0.6875rem;
+  font-weight: 700;
+}
+
+.wind.is-near .wind__here {
+  visibility: visible;
 }
 
 .wind__dir {
@@ -128,7 +136,12 @@
 mt-crew {
   display: flex;
   flex-direction: column;
-  gap: 22px;
+  gap: 18px;
+}
+
+mt-crew > * + * {
+  padding-top: 18px;
+  border-top: 1px solid var(--mt-line);
 }
 
 .craft {
@@ -138,7 +151,7 @@ mt-crew {
 }
 
 .craft__glyph {
-  width: 40px;
+  width: 44px;
   flex: none;
 }
 
@@ -221,15 +234,15 @@ mt-profile {
 }
 
 .tool--play {
-  min-width: 72px;
-  background: var(--mt-magenta);
+  min-width: 76px;
   border-color: var(--mt-magenta);
-  color: #fff;
+  color: var(--mt-magenta);
 }
 
 .tool--play[aria-pressed='true'] {
-  background: var(--mt-panel);
-  color: var(--mt-magenta);
+  background: var(--mt-magenta);
+  border-color: var(--mt-magenta);
+  color: var(--mt-panel);
 }
 
 .profile__clock {

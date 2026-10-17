@@ -14,7 +14,7 @@ export function elevationFt([lat, lon]: LatLon): number {
   const eastRise = Math.max(0, lon + 105.048) * 9800;
   const northRise = Math.max(0, lat - 39.565) * 3600;
   const roll =
-    26 * Math.sin(lat * 610 + lon * 220) + 18 * Math.sin(lon * 900 - lat * 310) + 10 * Math.sin((lat + lon) * 1700);
+    18 * Math.sin(lat * 610 + lon * 220) + 12 * Math.sin(lon * 900 - lat * 310) + 6 * Math.sin((lat + lon) * 1700);
   return 5430 + ridgeA + ridgeB + foothills + eastRise + northRise + Math.max(roll, -20);
 }
 
@@ -26,7 +26,7 @@ export interface ContourSet {
 }
 
 /** Contour lines every `step` ft via marching squares on a regular lat/lon grid. */
-export function buildContours(step = 40, cols = 150, rows = 140): ContourSet[] {
+export function buildContours(step = 50, cols = 150, rows = 140): ContourSet[] {
   const lats = Array.from({ length: rows + 1 }, (_, j) => BOUNDS.north - ((BOUNDS.north - BOUNDS.south) * j) / rows);
   const lons = Array.from({ length: cols + 1 }, (_, i) => BOUNDS.west + ((BOUNDS.east - BOUNDS.west) * i) / cols);
   const grid = lats.map((la) => lons.map((lo) => elevationFt([la, lo])));

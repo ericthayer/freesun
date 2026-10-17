@@ -116,7 +116,8 @@ mt-map[data-3d] .map__viewport::after {
 }
 .rose-ring,
 .rose-ticks {
-  stroke-width: 1.1px;
+  stroke-width: 1px;
+  opacity: 0.75;
 }
 .range-ring {
   stroke-width: 0.9px;
@@ -124,8 +125,9 @@ mt-map[data-3d] .map__viewport::after {
   opacity: 0.8;
 }
 
-/* Labels keep a constant screen size: --s is world units per screen pixel. */
-.chart text {
+/* Labels keep a constant screen size: --s is world units per screen pixel.
+   :where() keeps this base at class-level specificity so label variants can override it. */
+:where(.chart) text {
   font-family: var(--mt-font);
   font-size: calc(var(--s) * 12px);
   paint-order: stroke;
@@ -174,13 +176,13 @@ mt-map[data-3d] .map__viewport::after {
   fill: var(--mt-magenta);
   font-weight: 700;
   text-anchor: end;
-  transform: translate(calc(var(--s) * -14px), calc(var(--s) * 2px));
+  transform: translate(calc(var(--s) * -10px), calc(var(--s) * 14px));
 }
 .chart-label--landing {
   fill: var(--mt-magenta);
   font-weight: 700;
   text-anchor: start;
-  transform: translate(calc(var(--s) * 14px), 0);
+  transform: translate(calc(var(--s) * 18px), 0);
 }
 
 /* Flight */
@@ -197,6 +199,10 @@ mt-map[data-3d] .map__viewport::after {
 }
 .track--flown {
   stroke-width: 4px;
+}
+.track--casing {
+  stroke: var(--mt-halo);
+  stroke-width: 8px;
 }
 .chase-route {
   fill: none;
@@ -217,19 +223,29 @@ mt-map[data-3d] .map__viewport::after {
 }
 .drift-line {
   stroke: var(--mt-wind);
-  stroke-width: 1.5px;
-  opacity: 0.8;
+  stroke-width: 1.25px;
+  stroke-dasharray: 1 3;
+  stroke-linecap: round;
 }
-.drift-end {
+.drift-head {
   fill: var(--mt-wind);
-  r: calc(var(--s) * 3.5px);
+}
+#mt-arrow {
+  /* marker size follows zoom like the labels */
+  overflow: visible;
+}
+.port-mark {
+  r: calc(var(--s) * 5px);
+  fill: var(--mt-panel);
+  stroke: var(--mt-magenta);
+  stroke-width: 2px;
 }
 .chart-label--drift {
   fill: var(--mt-wind);
   font-weight: 600;
-  font-size: calc(var(--s) * 11px);
+  font-size: calc(var(--s) * 10.5px);
   text-anchor: start;
-  transform: translate(calc(var(--s) * 7px), 0);
+  transform: translate(calc(var(--s) * 8px), calc(var(--s) * -8px));
 }
 
 mt-map[data-satellite] .chart-vector {
@@ -326,7 +342,7 @@ mt-map[data-hide-chase] .truck {
   padding: 2px 6px;
   border-radius: 4px;
   background: var(--mt-magenta);
-  color: #fff;
+  color: var(--mt-panel);
   font: 700 0.75rem/1.2 var(--mt-font);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;

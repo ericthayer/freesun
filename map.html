@@ -17,7 +17,7 @@
       <div class="mt__grid">
         <header class="mt-head">
           <h1 class="mt-brand">FreeSun MapTracker</h1>
-          <p class="mt-mode">Replaying a simulated sunrise flight from Chatfield. Live tracking needs a GPS feed from the basket.</p>
+          <p class="mt-mode">Simulated sunrise flight. Live tracking starts once the basket sends GPS.</p>
           <div class="mt-head__tools">
             <p class="sync-status" id="sync-status" role="status" aria-live="polite">Loading live sources…</p>
             <fs-theme-toggle></fs-theme-toggle>
@@ -25,6 +25,7 @@
         </header>
 
         <aside class="mt-rail" aria-label="Flight details">
+          <mt-craft class="craft"></mt-craft>
           <section aria-labelledby="mt-position">
             <h2 class="panel__title" id="mt-position">Balloon position</h2>
             <mt-telemetry></mt-telemetry>

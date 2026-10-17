@@ -27,6 +27,7 @@ export class FlightOverlay {
   #world: Point[];
   #chaseWorld: Point[];
   #flown: SVGPathElement;
+  #casing: SVGPathElement;
   #drift: SVGGElement;
   #balloon: HTMLDivElement;
   #tag: HTMLSpanElement;
@@ -42,13 +43,17 @@ export class FlightOverlay {
     this.#chaseWorld = track.chase.map(project);
     const land = this.#world[this.#world.length - 1]!;
     this.#flown = s('path', { class: 'track track--flown' });
+    this.#casing = s('path', { class: 'track track--casing' });
     this.#drift = s('g', { class: 'chart-drift' });
     this.svg = s(
       'g',
       { class: 'chart-flight' },
+      s('defs', {}, s('marker', { id: 'mt-arrow', viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 7, markerHeight: 7, orient: 'auto-start-reverse', markerUnits: 'userSpaceOnUse' },
+        s('path', { class: 'drift-head', d: 'M0 0L10 5L0 10Z' }))),
       this.#drift,
       s('path', { class: 'chase-route', d: pathData(this.#chaseWorld) }),
       s('path', { class: 'track track--planned', d: pathData(this.#world) }),
+      this.#casing,
       this.#flown,
       s(
         'g',
@@ -86,8 +91,7 @@ export class FlightOverlay {
         return s(
           'g',
           { class: `drift drift--${k}` },
-          s('path', { class: 'drift-line', d: pathData([from, p]) }),
-          s('circle', { class: 'drift-end', cx: p.x.toFixed(1), cy: p.y.toFixed(1), r: 1 }),
+          s('path', { class: 'drift-line', d: pathData([from, p]), 'marker-end': 'url(#mt-arrow)' }),
           s('text', { class: 'chart-label chart-label--drift', x: p.x.toFixed(1), y: p.y.toFixed(1) }, lvl.label),
         );
       }),
@@ -96,7 +100,9 @@ export class FlightOverlay {
 
   setIndex(index: number): void {
     this.#index = index;
-    this.#flown.setAttribute('d', pathData(this.#world.slice(0, index + 1)));
+    const d = pathData(this.#world.slice(0, index + 1));
+    this.#flown.setAttribute('d', d);
+    this.#casing.setAttribute('d', d);
     const smp = this.#track.samples[index]!;
     this.#tag.textContent = `${smp.aglFt.toLocaleString('en-US')} ft`;
     for (const p of this.#pickets) p.classList.toggle('is-flown', Number(p.dataset.i) <= index);

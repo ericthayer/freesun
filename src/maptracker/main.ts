@@ -18,7 +18,7 @@ import type { MtMap } from './components/mt-map';
 import type { MtProfile } from './components/mt-profile';
 import type { MtTelemetry } from './components/mt-telemetry';
 import type { MtWinds } from './components/mt-winds';
-import type { CrewPanelData, MtCrew } from './components/mt-crew';
+import type { CrewPanelData, MtCraft, MtCrew } from './components/mt-crew';
 import type { Sourced } from '../dashboard/data/types';
 import type { WindsAloft } from './data/winds';
 
@@ -28,6 +28,7 @@ const profile = $<MtProfile>('mt-profile');
 const telemetry = $<MtTelemetry>('mt-telemetry');
 const winds = $<MtWinds>('mt-winds');
 const crew = $<MtCrew>('mt-crew');
+const craft = $<MtCraft>('mt-craft');
 
 const track = buildTrack();
 // Open at the top of the climb so the first view shows the flight in progress.
@@ -42,7 +43,6 @@ let crewData: CrewPanelData = {
 
 function applyWinds(src: Sourced<WindsAloft>): void {
   map.winds = src.value;
-  telemetry.winds = src.value;
   winds.data = src;
 }
 
@@ -50,6 +50,7 @@ map.init(track);
 telemetry.init(track);
 profile.init(track, clock, WINDS_SNAPSHOT.value.sunrise);
 crew.data = crewData;
+craft.data = crewData;
 applyWinds(WINDS_SNAPSHOT);
 
 let lastIndex = -1;
@@ -88,5 +89,6 @@ Promise.all([fetchWindsAloft(), fetchWeather(), fetchClubTables()]).then(([aloft
     weather: weather ?? crewData.weather,
   };
   crew.data = crewData;
+  craft.data = crewData;
   if (status) status.textContent = live.length ? `Live: ${live.join(', ')}` : 'Showing saved snapshot';
 });
