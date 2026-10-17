@@ -10,10 +10,11 @@ export default defineConfig({
   },
   build: {
     rollupOptions: {
-      // Two pages: the React club app and the vanilla Web Components crew board.
+      // The React club app plus two vanilla Web Components pages: crew board and flight deck.
       input: {
         main: resolve(__dirname, 'index.html'),
         dashboard: resolve(__dirname, 'dashboard.html'),
+        hud: resolve(__dirname, 'hud.html'),
       },
     },
   },

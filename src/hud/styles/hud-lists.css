@@ -1,0 +1,307 @@
+/* Crew room tabs, roster, log, chat and the wind ladder. */
+/* ---------- tabs and lists ---------- */
+.tabs {
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  border-radius: var(--r-ctl);
+  background: var(--hairline);
+}
+
+.tabs__tab {
+  flex: 1 1 0;
+  min-height: 36px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--ink-2);
+  font: 600 var(--step--1) / 1 var(--font-body);
+  cursor: pointer;
+}
+
+.tabs__tab[aria-selected='true'] {
+  background: var(--glass-strong);
+  color: var(--ink);
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.12);
+}
+
+.tabpanel {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  margin-right: -8px;
+  padding-right: 8px;
+  scrollbar-width: thin;
+}
+
+.roster,
+.log,
+.chat {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+}
+
+.roster__row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: start;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.avatar {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  font-weight: 700;
+  font-size: var(--step--1);
+  border: 1.5px solid currentColor;
+}
+
+.avatar--pilot {
+  color: var(--burner);
+  background: var(--burner-soft);
+}
+
+.avatar--crew {
+  color: var(--pilot);
+}
+
+.roster__name,
+.roster__meta,
+.roster__flights,
+.avail {
+  margin: 0;
+}
+
+.roster__name {
+  font-weight: 700;
+}
+
+.roster__meta {
+  font-size: var(--step--1);
+  color: var(--ink-2);
+}
+
+.roster__bio summary {
+  font-size: var(--step--2);
+  color: var(--ink-3);
+  cursor: pointer;
+  padding: 4px 0;
+}
+
+.roster__bio p {
+  margin: 2px 0 0;
+  font-size: var(--step--1);
+  color: var(--ink-2);
+}
+
+.roster__stats {
+  text-align: right;
+}
+
+.roster__flights {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--step-1);
+}
+
+.roster__flights small {
+  font-family: var(--font-body);
+  font-size: var(--step--2);
+  font-weight: 500;
+  color: var(--ink-3);
+}
+
+.avail {
+  font-size: var(--step--2);
+  font-weight: 600;
+}
+
+.avail::before {
+  content: '';
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: 5px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.avail--available {
+  color: var(--go);
+}
+
+.avail--busy {
+  color: var(--caution);
+}
+
+.avail--unavailable {
+  color: var(--nogo);
+}
+
+.log__row {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.log__row p {
+  margin: 0;
+}
+
+.log__head {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font-weight: 700;
+}
+
+.log__head span:last-child {
+  font-weight: 500;
+  color: var(--ink-2);
+  font-size: var(--step--1);
+  white-space: nowrap;
+}
+
+.log__line {
+  font-size: var(--step--1);
+  color: var(--burner);
+  font-weight: 600;
+}
+
+.log__notes {
+  font-size: var(--step--1);
+  color: var(--ink-2);
+}
+
+.chat {
+  gap: 8px;
+  padding: 4px 0;
+}
+
+.chat__msg {
+  max-width: 88%;
+  padding: 8px 12px;
+  border-radius: 14px 14px 14px 4px;
+  background: var(--hairline);
+  font-size: var(--step--1);
+}
+
+.chat__msg p {
+  margin: 0;
+}
+
+.chat__msg--mine {
+  justify-self: end;
+  border-radius: 14px 14px 4px 14px;
+  background: var(--burner-soft);
+}
+
+.chat__meta {
+  font-size: var(--step--2);
+  color: var(--ink-3);
+}
+
+/* ---------- wind ladder ---------- */
+.ladder {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 5px;
+}
+
+.ladder__row {
+  display: grid;
+  grid-template-columns: 3.4em minmax(0, 1fr) 3.4em;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--step--1);
+}
+
+.ladder__row--sunrise .ladder__time {
+  color: var(--burner);
+  font-weight: 700;
+}
+
+.ladder__time {
+  color: var(--ink-2);
+}
+
+.ladder__track {
+  position: relative;
+  height: 10px;
+  border-radius: 5px;
+  background:
+    linear-gradient(var(--ink-3), var(--ink-3)) var(--ideal) 0 / 1px 100% no-repeat,
+    linear-gradient(var(--nogo), var(--nogo)) var(--limit) 0 / 1.5px 100% no-repeat,
+    var(--hairline);
+}
+
+.ladder__bar {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: 5px;
+  background: var(--go);
+}
+
+.ladder__bar--caution {
+  background: var(--caution);
+}
+
+.ladder__bar--nogo {
+  background: var(--nogo);
+}
+
+.ladder__gust {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  width: 2px;
+  background: var(--ink);
+}
+
+.ladder__value {
+  text-align: right;
+  font-weight: 700;
+}
+
+.ladder__value small {
+  font-weight: 500;
+  color: var(--ink-3);
+}
+
+.ladder__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin: 0;
+  font-size: var(--step--2);
+  color: var(--ink-3);
+}
+
+.rose {
+  width: 56px;
+  height: 56px;
+  flex: none;
+}
+
+.rose__ring {
+  fill: none;
+  stroke: var(--hairline);
+  stroke-width: 6;
+}
+
+.rose__cardinal {
+  font: 700 9px var(--font-body);
+  fill: var(--ink-3);
+}
+
+.rose__arrow {
+  fill: var(--burner);
+}

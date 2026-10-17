@@ -1,13 +1,8 @@
 import type { WeatherHour, WeatherReport } from '../data/types';
+import { IDEAL_MPH, LIMIT_MPH, launchCall } from '../lib/launch-call';
 import { h, s } from '../lib/dom';
 import { compass, fmtClock, metersToFeet, skyFromCode } from '../lib/format';
 import { TileElement } from './tile-element';
-
-/** Surface-wind limits in mph. Club guidance: no launch above 15 mph; under 8 is ideal. */
-const IDEAL_MPH = 8;
-const LIMIT_MPH = 15;
-
-type Call = { kind: 'go' | 'caution' | 'nogo'; label: string; reason: string };
 
 export class FsWeather extends TileElement<WeatherReport> {
   protected readonly eyebrow = 'Weather · Chatfield surface';
@@ -49,23 +44,6 @@ export class FsWeather extends TileElement<WeatherReport> {
       windChart(w.hours, w.nextSunrise),
     ];
   }
-}
-
-/** Judge the hour before sunrise through two hours after, when the crew would be inflating and flying. */
-function launchCall(w: WeatherReport): Call {
-  const sunriseHour = w.nextSunrise.slice(0, 13);
-  const idx = w.hours.findIndex((hr) => hr.time.slice(0, 13) === sunriseHour);
-  const window = idx >= 0 ? w.hours.slice(Math.max(0, idx - 1), idx + 3) : w.hours.slice(0, 4);
-  if (!window.length) return { kind: 'caution', label: 'No forecast', reason: 'No hourly forecast for the launch window.' };
-  const maxWind = Math.max(...window.map((hr) => hr.windMph));
-  const maxGust = Math.max(...window.map((hr) => hr.gustMph));
-  const spread = Math.max(...window.map((hr) => hr.gustMph - hr.windMph));
-  const detail = `Launch window winds peak at ${maxWind.toFixed(0)} mph, gusting ${maxGust.toFixed(0)}.`;
-  if (maxWind >= LIMIT_MPH || maxGust >= LIMIT_MPH + 5)
-    return { kind: 'nogo', label: 'No-go', reason: `${detail} Above the ${LIMIT_MPH} mph club limit.` };
-  if (maxWind >= IDEAL_MPH || spread >= 10)
-    return { kind: 'caution', label: 'Marginal', reason: `${detail} Pilot's call at the field.` };
-  return { kind: 'go', label: 'Looks flyable', reason: `${detail} Under the ${IDEAL_MPH} mph comfort line.` };
 }
 
 function stat(label: string, value: string): Node {

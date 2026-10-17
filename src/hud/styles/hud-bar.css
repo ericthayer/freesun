@@ -1,0 +1,152 @@
+/* Replay bar, top readout strip and bacon meter, plus narrow-layout tweaks for panels. */
+/* ---------- replay ---------- */
+hud-replay.replay {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 8px 18px 8px 8px;
+  border-radius: 999px;
+  background: var(--glass);
+  border: 1px solid var(--glass-edge);
+  box-shadow: var(--glass-shadow);
+  backdrop-filter: blur(18px);
+  min-width: 0;
+}
+
+.replay__play {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--burner);
+  color: var(--glass-strong);
+  cursor: pointer;
+}
+
+.replay__play svg {
+  width: 22px;
+  height: 22px;
+  fill: currentColor;
+}
+
+.replay__scrub {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.replay__label {
+  display: block;
+  font-size: var(--step--2);
+  color: var(--ink-3);
+}
+
+.replay__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.replay__end {
+  font-size: var(--step--2);
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+
+.replay__range {
+  flex: 1 1 auto;
+  min-width: 60px;
+  accent-color: var(--burner);
+  height: 28px;
+}
+
+.replay__elapsed {
+  flex: none;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--step-2);
+  min-width: 4.6em;
+  text-align: right;
+}
+
+/* ---------- top strip ---------- */
+hud-readouts {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.strip {
+  display: flex;
+  gap: 18px;
+  margin: 0;
+}
+
+.strip dd {
+  margin: 0;
+  font-weight: 700;
+}
+
+.bacon {
+  display: grid;
+  grid-template-columns: auto 72px auto;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: var(--glass);
+  border: 1px solid var(--glass-edge);
+  color: var(--ink);
+  text-decoration: none;
+  font-size: var(--step--1);
+  backdrop-filter: blur(14px);
+}
+
+.bacon:hover {
+  border-color: var(--burner);
+}
+
+.bacon__label {
+  font-weight: 700;
+}
+
+.bacon__meter {
+  height: 8px;
+  border-radius: 4px;
+  background: var(--hairline);
+  overflow: hidden;
+}
+
+.bacon__fill {
+  display: block;
+  height: 100%;
+  background: var(--burner);
+}
+
+.bacon__value {
+  color: var(--ink-2);
+}
+
+@container page (max-width: 980px) {
+  hud-readouts,
+  .strip {
+    flex-wrap: wrap;
+  }
+
+  hud-replay.replay {
+    border-radius: var(--r-panel);
+  }
+}
+
+@container page (max-width: 520px) {
+  .readouts {
+    gap: 6px;
+  }
+
+  .replay__end {
+    display: none;
+  }
+}
