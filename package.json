@@ -8,7 +8,8 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "build:artifact": "node scripts/build-artifact.mjs"
+    "build:artifact": "node scripts/build-artifact.mjs",
+    "build:map-artifact": "node scripts/build-map-artifact.mjs"
   },
   "dependencies": {
     "@emotion/react": "^11.11.3",

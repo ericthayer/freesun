@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>FreeSun MapTracker</title>
+    <meta name="description" content="Flight chart for the Free Sun hot air balloon crew: track, altitude, winds aloft and chase crew over Chatfield State Park." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&family=Public+Sans:ital,wght@0,400;0,600;0,700;1,400&display=swap"
+    />
+  </head>
+  <body>
+    <div class="mt">
+      <div class="mt__grid">
+        <header class="mt-head">
+          <h1 class="mt-brand">FreeSun MapTracker</h1>
+          <p class="mt-mode">Simulated sunrise flight. Live tracking starts once the basket sends GPS.</p>
+          <div class="mt-head__tools">
+            <p class="sync-status" id="sync-status" role="status" aria-live="polite">Loading live sources…</p>
+            <fs-theme-toggle></fs-theme-toggle>
+          </div>
+        </header>
+
+        <aside class="mt-rail" aria-label="Flight details">
+          <mt-craft class="craft"></mt-craft>
+          <section aria-labelledby="mt-position">
+            <h2 class="panel__title" id="mt-position">Balloon position</h2>
+            <mt-telemetry></mt-telemetry>
+          </section>
+          <section aria-labelledby="mt-winds-title">
+            <mt-winds></mt-winds>
+          </section>
+          <mt-crew></mt-crew>
+          <p class="mt-foot">
+            Chart traced from aerial imagery; terrain is stylized, not survey data. Crew, fleet and schedule from
+            <a href="https://rockymountainfly.com/" target="_blank" rel="noopener">rockymountainfly.com</a>. Weather and winds from
+            Open-Meteo. Not for navigation; the pilot in command makes every call.
+          </p>
+        </aside>
+
+        <main class="mt-main">
+          <mt-map></mt-map>
+          <mt-profile></mt-profile>
+        </main>
+      </div>
+    </div>
+    <script type="module" src="/src/maptracker/main.ts"></script>
+  </body>
+</html>
