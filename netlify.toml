@@ -1,0 +1,8 @@
+# freesun-dev: club app plus the crew pages (dashboard, map, hud).
+# VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are set in the Netlify site env.
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "20"
