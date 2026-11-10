@@ -31,7 +31,7 @@ export function planeGeometry(track: FlightTrack): PlaneGeometry {
   const box = boxOf(pts, 1500);
   return {
     box,
-    core: boxOf(pts, 650),
+    core: boxOf(pts, 1000),
     width: Math.round(box.maxX - box.minX),
     height: Math.round(box.maxY - box.minY),
     local: (p) => ({ x: p.x - box.minX, y: p.y - box.minY }),
@@ -56,6 +56,10 @@ export function chartLayer(g: PlaneGeometry): SVGGElement {
   );
 }
 
+/** Tile elements survive plane rebuilds (live weather moves the track) so loaded imagery never flashes. */
+const tileCache = new Map<string, SVGImageElement>();
+let tileError: (() => void) | null = null;
+
 export function imageryLayer(g: PlaneGeometry, onError: () => void): SVGGElement {
   let failed = false;
   const fail = () => {
@@ -63,6 +67,7 @@ export function imageryLayer(g: PlaneGeometry, onError: () => void): SVGGElement
     failed = true;
     onError();
   };
+  tileError = fail;
   const { core, box } = g;
   const fade = s(
     'radialGradient',
@@ -83,23 +88,21 @@ export function imageryLayer(g: PlaneGeometry, onError: () => void): SVGGElement
       'g',
       { mask: 'url(#imagery-mask)' },
       ...imageryTiles(core).map((t) => {
-        const img = s('image', {
-          href: t.href,
-          x: t.x - box.minX,
-          y: t.y - box.minY,
-          width: 257,
-          height: 257,
-          preserveAspectRatio: 'none',
-          decoding: 'async',
-        });
-        img.addEventListener('error', fail, { once: true });
+        let img = tileCache.get(t.href);
+        if (!img) {
+          img = s('image', { href: t.href, width: 257, height: 257, preserveAspectRatio: 'none', decoding: 'async' });
+          img.addEventListener('error', () => tileError?.(), { once: true });
+          tileCache.set(t.href, img);
+        }
+        img.setAttribute('x', String(t.x - box.minX));
+        img.setAttribute('y', String(t.y - box.minY));
         return img;
       }),
     ),
   );
 }
 
-/** Range rings, downwind arrows, launch and landing marks, place labels. Shown over both base layers. */
+/** Range rings, downwind arrows, launch and landing marks. Shown over both base layers. */
 export function hudLayer(g: PlaneGeometry, track: FlightTrack): SVGGElement {
   const launch = g.local(project(LAUNCH_SITE));
   const last = track.samples[track.samples.length - 1]!;
@@ -112,7 +115,6 @@ export function hudLayer(g: PlaneGeometry, track: FlightTrack): SVGGElement {
       'g',
       { class: 'ring' },
       s('circle', { cx: launch.x, cy: launch.y, r: Math.abs(r) }),
-      s('text', { x: launch.x + 6, y: launch.y + r - 6, class: 'ring__label' }, `${mi} mi`),
     );
   });
 
@@ -125,38 +127,48 @@ export function hudLayer(g: PlaneGeometry, track: FlightTrack): SVGGElement {
     }
   }
 
-  const labels = [
-    ...PLACES.map((p) => {
-      const at = g.local(project(p.at));
-      return s('text', { x: at.x, y: at.y, class: `place place--${p.kind}`, 'text-anchor': 'middle' }, p.name);
-    }),
-    ...LINES.filter((l) => l.labelAt !== undefined).map((l) => {
-      const at = g.local(project(l.points[l.labelAt!]!));
-      return s('text', { x: at.x + 10, y: at.y, class: `place place--${l.kind}` }, l.name);
-    }),
-  ];
-
   return s(
     'g',
     { class: 'layer-hud' },
     s('g', { class: 'drift-field', 'aria-hidden': 'true' }, ...arrows),
     ...rings,
     s('path', { class: 'track track--planned', d: planned }),
-    s('g', { class: 'labels' }, ...labels),
     s(
       'g',
       { class: 'mark mark--launch', transform: `translate(${launch.x} ${launch.y})` },
       s('circle', { r: 26, class: 'mark__halo' }),
       s('circle', { r: 9, class: 'mark__core' }),
-      s('text', { x: -16, y: 5, 'text-anchor': 'end', class: 'mark__label' }, 'Montgolfier Balloon Port'),
     ),
     s(
       'g',
       { class: 'mark mark--landing', transform: `translate(${landing.x} ${landing.y})` },
       s('circle', { r: 14, class: 'mark__ring' }),
       s('path', { d: 'M-7 -7 L7 7 M7 -7 L-7 7', class: 'mark__x' }),
-      s('text', { x: 22, y: 5, class: 'mark__label' }, 'Simulated landing'),
     ),
     s('path', { class: 'track track--flown', d: '' }),
   );
+}
+
+export interface MapLabel {
+  text: string;
+  at: Pt;
+  kind: 'water' | 'terrain' | 'town' | 'river' | 'road' | 'ring' | 'mark';
+  /** Screen offset from the anchor, so a label clears its marker. */
+  dx?: number;
+  anchor?: 'start' | 'middle' | 'end';
+}
+
+/** Labels are drawn upright in screen space by the overlay, so they stay readable when the plane tilts. */
+export function mapLabels(g: PlaneGeometry, track: FlightTrack): MapLabel[] {
+  const launch = g.local(project(LAUNCH_SITE));
+  const landing = g.local(project(track.samples[track.samples.length - 1]!.at));
+  return [
+    ...PLACES.map((p): MapLabel => ({ text: p.name, at: g.local(project(p.at)), kind: p.kind, anchor: 'middle' })),
+    ...LINES.filter((l) => l.labelAt !== undefined).map(
+      (l): MapLabel => ({ text: l.name, at: g.local(project(l.points[l.labelAt!]!)), kind: l.kind, dx: 8 }),
+    ),
+    ...[1, 2, 3].map((mi): MapLabel => ({ text: `${mi} mi`, at: g.local(project(destination(LAUNCH_SITE, 180, mi * MILE_M))), kind: 'ring', dx: 6 })),
+    { text: 'Montgolfier Balloon Port', at: launch, kind: 'mark', dx: -18, anchor: 'end' },
+    { text: 'Simulated landing', at: landing, kind: 'mark', dx: 18 },
+  ];
 }

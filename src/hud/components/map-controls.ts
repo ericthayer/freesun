@@ -62,8 +62,7 @@ export function mapControls(on: Handlers): MapControls {
   const root = h(
     'div',
     { class: 'map__controls', role: 'toolbar', 'aria-label': 'Map controls' },
-    compassRose,
-    h('div', { class: 'map-btn-stack' }, zoomBtn('in', 'Zoom in'), zoomBtn('out', 'Zoom out'), zoomBtn('reset', 'Fit flight')),
+    h('div', { class: 'map-btn-stack' }, compassRose, zoomBtn('in', 'Zoom in'), zoomBtn('out', 'Zoom out'), zoomBtn('reset', 'Fit flight')),
     mode.root,
     layer.root,
   );

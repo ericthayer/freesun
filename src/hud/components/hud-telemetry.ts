@@ -110,7 +110,7 @@ export class HudTelemetry extends HTMLElement {
     };
     const climb = Math.round(now.climbFpm / 10) * 10;
     set('alt', `${fmtInt(Math.round(now.altFt))} ft`);
-    set('climb', climb === 0 ? 'Level' : `${climb > 0 ? '+' : '−'}${fmtInt(Math.abs(climb))} fpm`);
+    set('climb', Math.abs(climb) < 50 ? 'Level' : `${climb > 0 ? '+' : '−'}${fmtInt(Math.abs(climb))} fpm`);
     set('speed', `${now.speedMph.toFixed(1)} mph`);
     set('hdg', `${Math.round(now.headingDeg)}° ${compass(now.headingDeg)}`);
     set('msl', `${fmtInt(mslFt(now))} ft`);

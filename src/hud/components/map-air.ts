@@ -3,8 +3,9 @@ import { fmtInt } from '../../dashboard/lib/format';
 import type { Pt } from '../lib/geo';
 import type { FlightSample, FlightTrack } from '../lib/sim';
 import { sampleAt } from '../lib/sim';
+import type { MapLabel } from './map-layers';
 
-/** Screen-space overlay: altitude curtain, tether line, balloon and its altitude tag. */
+/** Screen-space overlay: map labels, altitude curtain, tether line, balloon and its altitude tag. */
 
 /** Plane-local point plus height in plane units -> viewport point. */
 export type ToScreen = (p: Pt, height: number) => Pt;
@@ -16,7 +17,11 @@ export interface AirLayer {
   root: SVGSVGElement;
   draw(track: FlightTrack, minute: number, toLocal: (s: FlightSample) => Pt, toScreen: ToScreen, lifted: boolean): void;
   resize(width: number, height: number): void;
+  setLabels(labels: MapLabel[]): void;
 }
+
+/** In 3D, labels above this fraction of the viewport sit in the horizon haze and are hidden. */
+const HORIZON = 0.36;
 
 const pts = (list: Pt[]): string => list.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
 
@@ -38,9 +43,13 @@ export function createAirLayer(): AirLayer {
     s('rect', { class: 'balloon__basket', x: -4.5, y: 12, width: 9, height: 7, rx: 1.5 }),
   );
   const tagText = s('text', { class: 'air__tag', x: 0, y: 0 });
+  const labelGroup = s('g', { class: 'air__labels' });
+  let labels: { spec: MapLabel; el: SVGTextElement }[] = [];
+  let size = { w: 0, h: 0 };
   const root = s(
     'svg',
     { class: 'map__air', 'aria-hidden': 'true' },
+    labelGroup,
     planned,
     curtain,
     flown,
@@ -53,9 +62,26 @@ export function createAirLayer(): AirLayer {
   return {
     root,
     resize(width, height) {
+      size = { w: width, h: height };
       root.setAttribute('viewBox', `0 0 ${width} ${height}`);
     },
+    setLabels(specs) {
+      labels = specs.map((spec) => ({
+        spec,
+        el: s('text', { class: `label label--${spec.kind}`, 'text-anchor': spec.anchor ?? 'start' }, spec.text),
+      }));
+      labelGroup.replaceChildren(...labels.map((l) => l.el));
+    },
     draw(track, minute, toLocal, toScreen, lifted) {
+      const horizon = lifted ? size.h * HORIZON : -Infinity;
+      for (const { spec, el } of labels) {
+        const p = toScreen(spec.at, 0);
+        const visible = p.y > horizon && p.y < size.h + 20 && p.x > -200 && p.x < size.w + 200;
+        el.toggleAttribute('hidden', !visible);
+        if (!visible) continue;
+        el.setAttribute('x', (p.x + (spec.dx ?? 0)).toFixed(1));
+        el.setAttribute('y', (p.y + 4).toFixed(1));
+      }
       const now = sampleAt(track, minute);
       const h = (a: number) => (lifted ? a * HEIGHT_PX_PER_FT : 0);
       const done = track.samples.filter((x) => x.minute < minute).concat(now);

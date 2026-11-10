@@ -7,7 +7,7 @@ import type { FlightTrack } from '../lib/sim';
 import { sampleAt } from '../lib/sim';
 import { createAirLayer } from './map-air';
 import type { PlaneGeometry } from './map-layers';
-import { chartLayer, hudLayer, imageryLayer, landLayer, planeGeometry } from './map-layers';
+import { chartLayer, hudLayer, imageryLayer, landLayer, mapLabels, planeGeometry } from './map-layers';
 import { mapControls } from './map-controls';
 
 export type ViewMode = '2d' | '3d';
@@ -85,7 +85,7 @@ export class HudMap extends HTMLElement {
     if (this.getAttribute('imagery') === 'off') this.#controls.disableImagery('Satellite imagery is not available in this preview');
     else this.#layer = 'imagery';
     this.#plane.append(this.#svg);
-    this.#viewport.append(this.#plane, this.#air.root);
+    this.#viewport.append(this.#plane, h('div', { class: 'map__haze', 'aria-hidden': 'true' }), this.#air.root);
     this.replaceChildren(h('div', { class: 'map__sky', 'aria-hidden': 'true' }), this.#viewport, this.#controls.root, this.#credit);
     this.#plane.addEventListener('transitionrun', this.#onTransition);
     this.#resize.observe(this.#viewport);
@@ -121,6 +121,7 @@ export class HudMap extends HTMLElement {
     if (this.#layer === 'imagery') layers.splice(1, 0, imageryLayer(geo, () => this.#imageryFailed()));
     this.#svg.replaceChildren(...layers);
     this.#flown = this.#svg.querySelector('.track--flown');
+    this.#air.setLabels(mapLabels(geo, track));
     this.#syncChrome();
     this.#applyTransform(false);
   }
@@ -180,7 +181,7 @@ export class HudMap extends HTMLElement {
     const box = boxOf(local.map(turned));
     const { left, right } = this.#stageInsets();
     const openW = Math.max(240, this.#vp.w - left - right);
-    const fit = Math.min((openW * (lifted ? 0.9 : 0.8)) / (box.maxX - box.minX), (this.#vp.h * (lifted ? 1.25 : 0.72)) / (box.maxY - box.minY));
+    const fit = Math.min((openW * (lifted ? 0.72 : 0.8)) / (box.maxX - box.minX), (this.#vp.h * (lifted ? 1.25 : 0.72)) / (box.maxY - box.minY));
     const scale = fit * this.#zoom;
     this.style.setProperty('--k', Math.max(0.8, Math.min(2.6, 1 / scale)).toFixed(2));
     const mid = boxOf(local);

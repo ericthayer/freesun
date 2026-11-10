@@ -31,7 +31,9 @@
   overflow: auto;
   margin-right: -8px;
   padding-right: 8px;
+  padding-bottom: 20px;
   scrollbar-width: thin;
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 28px), transparent);
 }
 
 .roster,

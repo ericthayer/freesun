@@ -13,7 +13,29 @@ hud-map {
 }
 
 hud-map[data-mode='3d'] .map__sky {
-  background: linear-gradient(to bottom, var(--sky-top) 0%, var(--sky-glow) 34%, var(--land) 58%);
+  background: linear-gradient(to bottom, var(--sky-top) 0%, var(--sky-mid) 22%, var(--sky-glow) 31%, var(--land) 44%);
+}
+
+/* Flat dawn horizon in 3D: hides the far edge of the plane behind a straight band of sky. */
+.map__haze {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 52%;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 600ms ease;
+  background: linear-gradient(
+    to bottom,
+    var(--sky-top) 0%,
+    var(--sky-mid) 34%,
+    var(--sky-glow) 62%,
+    color-mix(in srgb, var(--sky-glow) 40%, transparent) 76%,
+    transparent 100%
+  );
+}
+
+hud-map[data-mode='3d'] .map__haze {
+  opacity: 1;
 }
 
 .map__viewport {
@@ -26,7 +48,6 @@ hud-map[data-mode='3d'] .map__sky {
   position: absolute;
   transform-origin: 50% 50%;
   will-change: transform;
-  mask-image: radial-gradient(closest-side, #000 72%, transparent 100%);
 }
 
 .map__plane.is-animating {
@@ -93,45 +114,12 @@ hud-map[data-layer='imagery'] .layer-chart {
 }
 
 /* ---------- HUD marks ---------- */
-.place {
-  font: 500 calc(14px * var(--k, 1)) var(--font-body);
-  fill: var(--label);
-  paint-order: stroke;
-  stroke: var(--label-halo);
-  stroke-width: calc(4px * var(--k, 1));
-  stroke-linejoin: round;
-}
-
-.place--water,
-.place--river {
-  font-style: italic;
-  fill: var(--water-edge);
-}
-
-.place--water {
-  font-size: calc(17px * var(--k, 1));
-}
-
-.place--town {
-  font-weight: 700;
-  font-size: calc(14px * var(--k, 1));
-}
-
-.place--road {
-  font-size: calc(12px * var(--k, 1));
-}
-
 .ring circle {
   fill: none;
   stroke: var(--ink-3);
   stroke-width: 1.6;
   stroke-dasharray: 6 10;
   opacity: 0.6;
-}
-
-.ring__label {
-  font: 600 calc(12px * var(--k, 1)) var(--font-body);
-  fill: var(--ink-3);
 }
 
 .drift {
@@ -182,22 +170,60 @@ hud-map[data-layer='imagery'] .layer-chart {
   stroke-linecap: round;
 }
 
-.mark__label {
-  font: 700 calc(14px * var(--k, 1)) var(--font-body);
-  fill: var(--ink);
+hud-map[data-layer='imagery'] :is(.ring circle, .drift) {
+  stroke: #f3f4ef;
+}
+
+/* ---------- screen-space labels (upright in 2D and 3D) ---------- */
+.label {
+  font: 500 12px var(--font-body);
+  fill: var(--label);
   paint-order: stroke;
   stroke: var(--label-halo);
-  stroke-width: calc(4px * var(--k, 1));
+  stroke-width: 3.5px;
   stroke-linejoin: round;
 }
 
-hud-map[data-layer='imagery'] :is(.place, .mark__label, .ring__label) {
-  fill: #f3f4ef;
-  stroke: rgb(10 16 14 / 0.65);
+.label[hidden] {
+  display: none;
 }
 
-hud-map[data-layer='imagery'] :is(.ring circle, .drift) {
-  stroke: #f3f4ef;
+.label--water,
+.label--river {
+  font-style: italic;
+  fill: var(--water-edge);
+}
+
+.label--water {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.label--town {
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+}
+
+.label--road {
+  font-size: 11px;
+}
+
+.label--ring {
+  font-size: 11px;
+  font-weight: 600;
+  fill: var(--ink-3);
+}
+
+.label--mark {
+  font-size: 13px;
+  font-weight: 700;
+  fill: var(--ink);
+}
+
+hud-map[data-layer='imagery'] .label {
+  fill: #f3f4ef;
+  stroke: rgb(10 16 14 / 0.7);
 }
 
 /* ---------- airborne overlay ---------- */
@@ -326,17 +352,13 @@ hud-map[data-layer='imagery'] .air__tag {
 .north {
   display: grid;
   place-items: center;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: var(--glass);
-  border: 1px solid var(--glass-edge);
-  backdrop-filter: blur(14px);
+  min-height: 40px;
+  border-bottom: 1px solid var(--hairline);
 }
 
 .north svg {
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
 }
 
 .north g {
@@ -364,11 +386,10 @@ hud-map[data-layer='imagery'] .air__tag {
 .map__credit {
   position: absolute;
   z-index: 1;
-  top: 84px;
-  right: calc(var(--col-right) + var(--gap) * 2);
+  bottom: calc(var(--gap) + 76px);
+  left: calc(var(--rail) + var(--col-left) + var(--gap) * 3);
   margin: 0;
-  max-width: 34ch;
-  text-align: right;
+  max-width: 44ch;
   font-size: var(--step--2);
   color: var(--ink-2);
   text-shadow: 0 0 6px var(--label-halo);
@@ -377,6 +398,7 @@ hud-map[data-layer='imagery'] .air__tag {
 @media (prefers-reduced-motion: reduce) {
   .map__plane.is-animating,
   .map__sky,
+  .map__haze,
   .north g {
     transition: none;
   }

@@ -13,7 +13,7 @@ function calendarLine(items: ScheduleItem[]): string {
   const next = flights.find((f) => f.date >= today());
   if (next) return `${next.title}, ${fmtDate(next.date, false)}${next.time ? ` at ${fmtClock(next.time)}` : ''}`;
   const last = flights[flights.length - 1];
-  return last ? `Nothing booked. Last was ${last.title}, ${fmtDate(last.date)}` : 'Nothing booked yet';
+  return last ? `Nothing booked since ${fmtDate(last.date)}` : 'Nothing booked yet';
 }
 
 /** Sunrise launch window: the call, the numbers behind it, and who would fly. */

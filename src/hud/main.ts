@@ -66,6 +66,7 @@ Promise.all([fetchWeather(), fetchClubTables()]).then(([weather, club]) => {
   store.patch(next);
   if (status) {
     const live = Object.keys(next);
-    status.textContent = live.length ? `Live: ${live.join(', ')}. Others from snapshot.` : 'Showing saved snapshot';
+    status.dataset.live = String(live.length > 0);
+    status.textContent = live.length ? `Live ${live.join(', ')}; the rest is a saved snapshot` : 'Showing the saved snapshot';
   }
 });
