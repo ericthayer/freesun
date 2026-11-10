@@ -10,11 +10,13 @@ export default defineConfig({
   },
   build: {
     rollupOptions: {
-      // The React club app plus the vanilla Web Components crew pages.
+      // The React club app plus the vanilla Web Components crew pages:
+      // crew board, map tracker and flight deck.
       input: {
         main: resolve(__dirname, 'index.html'),
         dashboard: resolve(__dirname, 'dashboard.html'),
         map: resolve(__dirname, 'map.html'),
+        hud: resolve(__dirname, 'hud.html'),
       },
     },
   },
